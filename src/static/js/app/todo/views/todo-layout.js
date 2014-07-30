@@ -70,6 +70,9 @@ var TodoLayout = rich.LayoutView.extend({
             size: [400, 400],
             direction: scroll.DIRECTION_Y
         });
+        this.listenTo(this.filteredCollection, 'add remove reset', function(){
+            scrollview.update();
+        });
         scrollview.addSubview(this.listView);
 
         // show views
@@ -84,6 +87,10 @@ var TodoLayout = rich.LayoutView.extend({
 
     showCompleted: function(){
         this.filteredCollection.reset(this.masterCollection.completedTasks());
+    },
+
+    showAll: function(){
+        this.filteredCollection.reset(this.masterCollection.models);
     },
 });
 

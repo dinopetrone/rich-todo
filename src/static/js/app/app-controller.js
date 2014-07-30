@@ -15,7 +15,7 @@ var AppController = marionette.Controller.extend({
     },
 
     index: function(){
-
+        this.todo.showAll();
     },
 
     showActive: function(){

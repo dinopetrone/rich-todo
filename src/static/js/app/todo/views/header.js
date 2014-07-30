@@ -14,7 +14,7 @@ var HeaderView = rich.ItemView.extend({
         'keypress #new-task': 'onInputConfirm'
     },
     initialize : function(options){
-        this.masterCollection = options.collection
+        this.masterCollection = options.masterCollection;
     },
 
     onRender: function(){
@@ -34,9 +34,10 @@ var HeaderView = rich.ItemView.extend({
     },
 
     createTask: function(name) {
-        this.masterCollection.add({
+        var model = this.masterCollection.add({
             title: name
         })
+        this.collection.add(model);
     }
 });
 
