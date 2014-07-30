@@ -9,7 +9,7 @@ var ListCellView = rich.ItemView.extend({
     ui: {
         edit: '.edit',
         input: '.editor',
-        remove: '.remove',
+        remove: '.destroy',
         title: '.title',
         checkbox: '.checkbox'
     },
