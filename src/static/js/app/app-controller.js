@@ -6,18 +6,24 @@ var marionette = require('marionette');
 var app = require('app/app');
 var TodoLayout = require('app/todo/views/todo-layout').TodoLayout;
 
-
-
-
 var AppController = marionette.Controller.extend({
 
     initialize: function(options){
         this.app = app;
-        this.app.todo.show(new TodoLayout());
+        this.todo = new TodoLayout();
+        this.app.todo.show(this.todo);
     },
 
     index: function(){
 
+    },
+
+    showActive: function(){
+        this.todo.showActive();
+    },
+
+    showCompleted: function(){
+        this.todo.showCompleted();
     },
 });
 

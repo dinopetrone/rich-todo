@@ -36,7 +36,9 @@ var FooterView = rich.ItemView.extend({
     },
 
     changeFilter: function(status) {
-        backbone.history.navigate(status);
+        backbone.history.navigate(status, {
+            trigger:true
+        });
     },
 
     wantsToggleAll: function(event) {

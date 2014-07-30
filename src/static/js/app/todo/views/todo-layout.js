@@ -37,37 +37,54 @@ var TodoLayout = rich.LayoutView.extend({
         })
     },
 
+    initialize: function(){
+        this.masterCollection = new Tasks();
+        this.filteredCollection = new Tasks();
+        _.each(_.range(20), function(i){
+            this.masterCollection.add({
+                title:'hi'+(i+1),
+                isActive: Math.random() > 0.5
+            });
+        }, this);
+
+        this.filteredCollection.reset(this.masterCollection.models);
+
+    },
+
     shouldInitializeRenderable: function(){
         return false;
     },
 
     onShow : function(){
-        var collection = new Tasks();
-        _.each(_.range(20), function(i){
-            // collection.add({title:'hi'+(i+1)});
-        });
-
-
         var options = {
-            collection: collection
+            collection: this.filteredCollection,
+            masterCollection: this.masterCollection
         };
 
         // list view creation inside a scrollview
-        var listView = new ListCollectionView(options);
+        var listview = this.listView = new ListCollectionView(options);
         var scrollview = new scroll.ScrollView({
             contentSize: function(){
-                return listView.getSize();
+                return listview.getSize();
             },
             size: [400, 400],
             direction: scroll.DIRECTION_Y
         });
-        scrollview.addSubview(listView);
+        scrollview.addSubview(this.listView);
 
         // show views
         this.header.show(new HeaderView(options));
         this.list.show(scrollview);
         this.footer.show(new FooterView(options));
-    }
+    },
+
+    showActive: function(){
+        this.filteredCollection.reset(this.masterCollection.activeTasks());
+    },
+
+    showCompleted: function(){
+        this.filteredCollection.reset(this.masterCollection.completedTasks());
+    },
 });
 
 exports.TodoLayout = TodoLayout;
