@@ -14,7 +14,8 @@ var TodoLayout = rich.LayoutView.extend({
         header: rich.Region.extend({
             modifier: function(){
                 return new Modifier({
-                    origin: [0.5, 0]
+                    origin: [0.5, 0],
+                    transform: Transform.translate(0, 20, 0)
                 });
             }
         }),
@@ -22,14 +23,15 @@ var TodoLayout = rich.LayoutView.extend({
             modifier: function(){
                 return new Modifier({
                     origin: [0.5, 0],
-                    transform: Transform.translate(0, 50, 0)
+                    transform: Transform.translate(0, 70, 0)
                 });
             }
         }),
         footer: rich.Region.extend({
             modifier: function(){
                 return new Modifier({
-                    origin: [0.5, 1]
+                    origin: [0.5, 1],
+                    transform: Transform.translate(0, -20, 0)
                 });
             }
         })

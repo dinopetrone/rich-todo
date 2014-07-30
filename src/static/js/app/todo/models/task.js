@@ -6,6 +6,16 @@ var Task = backbone.Model.extend({
         title: null,
         isActive: true,
         date: null,
+    },
+    initialize: function() {
+        this.set('date', Date.now());
+    },
+    toggleIsActive: function() {
+        if (this.localStorage) {
+            this.set('isActive', !this.get('isActive')).save();
+        } else {
+            this.set('isActive', !this.get('isActive'));
+        }
     }
 });
 

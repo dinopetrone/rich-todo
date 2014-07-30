@@ -1,23 +1,31 @@
 define(function(require, exports, module) {
 
+var $ = require('jquery');
+var backbone = require('backbone');
 var marionette = require('marionette');
 var vent = require('built/app/vent').vent;
 var modals = require('built/app/modals');
 var activity = require('built/app/activity');
 var keys = require('built/app/keys');
+var app = require('app/app');
 var TodoLayout = require('app/todo/views/todo-layout').TodoLayout;
 
 
-var ApplicationDelegate = marionette.Controller.extend({
+
+
+var AppController = marionette.Controller.extend({
 
     initialize: function(options){
         // This call is required to initialize the
         // BUILT App foundation. See below for what's done.
         // You can customize that as necessary.
         this.BUILT();
-        this.app = options.app;
-
+        this.app = app;
         this.app.todo.show(new TodoLayout());
+    },
+
+    index: function(){
+
     },
 
     BUILT: function(){
@@ -88,5 +96,5 @@ var ApplicationDelegate = marionette.Controller.extend({
     }
 });
 
-exports.ApplicationDelegate = ApplicationDelegate;
+exports.AppController = AppController;
 });

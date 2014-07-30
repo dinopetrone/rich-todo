@@ -11,15 +11,15 @@ var ListCellView = rich.ItemView.extend({
         input: '.editor',
         remove: '.remove',
         title: '.title',
-        checkbox: '.changeStatus'
+        checkbox: '.checkbox'
     },
     // Four possible events: remove, edit, accept edit,
     // & active/completed state switching.
     events: {
-        'click .destroy': 'wantsRemove',
-        'click .edit': 'editClick',
-        'keypress .editor': 'editAccept',
-        'click .changeStatus': 'switchState'
+        'click @ui.remove': 'wantsRemove',
+        'click @ui.edit': 'editClick',
+        'keypress @ui.input': 'editAccept',
+        'click @ui.checkbox': 'switchState'
     },
     initialize: function(options) {
         this.masterCollection = options.masterCollection;
