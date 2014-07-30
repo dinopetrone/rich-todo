@@ -53,12 +53,11 @@ define(function (require, exports, module) {
 
         _famousReset: function(){
             this.root = null;
-            this.triggerRichInvalidate();
+            this.invalidate();
         },
 
         render: function(){
             if(!this.root || this.needsDisplay()){
-
                 this._ensureViewIsIntact();
                 this.triggerMethod('before:render', this);
                 this._renderChildren();
