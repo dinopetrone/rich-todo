@@ -10,7 +10,10 @@ function getViewSize(view){
     var fragment = document.createDocumentFragment();
     var div = document.createElement('div');
 
-    div.setAttribute('class', className);
+    if(className){
+        div.setAttribute('class', className);
+    }
+
     div.setAttribute('style', 'visibility:hidden; position:absolute;');
 
     div.innerHTML = view.renderHTML();
@@ -108,6 +111,25 @@ function modifierWithAlign(config, modifier){
     return modifier;
 }
 
+function modifierWithConfig(config){
+    // config is:
+    // {
+    //    transform: ...
+    //    origin: ...
+    //    align: ...
+    //    size: ...
+    //    opacity: ...
+    // }
+    modifier = modifier || new Modifier();
+
+    modifierWithOpacity(config, modifier);
+    modifierWithOrigin(config, modifier);
+    modifierWithSize(config, modifier);
+    modifierWithTransform(config, modifier);
+
+    return modifier;
+}
+
 
 exports.getViewSize = getViewSize;
 exports.postrenderOnce = postrenderOnce;
@@ -116,5 +138,6 @@ exports.modifierWithSize = modifierWithSize;
 exports.modifierWithOpacity = modifierWithOpacity;
 exports.modifierWithOrigin = modifierWithOrigin;
 exports.modifierWithAlign = modifierWithAlign;
+exports.modifierWithConfig = modifierWithConfig;
 
 });

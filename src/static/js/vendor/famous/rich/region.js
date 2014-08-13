@@ -1,5 +1,6 @@
 define(function (require, exports, module) {
 
+var _ = require('underscore');
 var marionette = require('marionette');
 var Engine = require('famous/core/Engine');
 var RenderNode = require('famous/core/RenderNode');
@@ -7,6 +8,8 @@ var FamousLayoutView = require('./layoutviews').FamousLayoutView;
 var FamousView = require('./view').FamousView;
 var utils = require('./utils');
 var events = require('./events');
+var autolayout = require('./autolayout/init');
+
 
 var regionClassWithConfig = function(config){
     var modifier = utils.modifierWithAlign(config, modifier);
@@ -26,19 +29,17 @@ var FamousRegion = marionette.Region.extend({
 
         this.options = options || {};
 
-        if(options.context){
-            this.context = options.context;
-        }
+        var richOptions = ['context', 'modifier'];
+        var propertyOptions = ['size', 'zIndex'];
 
-        if(options.modifier){
-            this.modifier = options.modifier;
-        }
+        _.extend(this, _.pick(this.options, richOptions.concat(propertyOptions)));
 
         this.el = Marionette.getOption(this, 'el');
 
         if(typeof this.el == 'string'){
             this.el = $(this.el);
         }
+
         if(!this.context && !this.el){
             var message = 'An \'el\' or \'context\' must be specified for a region.';
             var error = new Error(message);
@@ -55,18 +56,57 @@ var FamousRegion = marionette.Region.extend({
             this.initialize.apply(this, args);
         }
 
+        // TODO: Detect resize + invalidate
         var target = this.superview || this.context;
 
-        this.view = new FamousView();
+        if(!this.size){
+            this.size = function(){
+                return target.getSize();
+            };
+        }
+
+        var size = _.result(this, 'size');
+
+        this.view = new FamousView({size: size, zIndex: this.zIndex || 1});
+        this.view.name = 'regionView';
         this.view.context = this.context;
         this.view.superview = this;
 
+        // we are at the top of our view heirarchy.
+        // this *should* hold true.
         if(target == this.context){
             target.add(this);
+            // var action = _.throttle(this.contextDidResize.bind(this), 100);
+            // this.context.on('resize', action);
+
+            this.context.on('resize', this.contextDidResize.bind(this));
         }
 
+        this._initializeAutolayout();
         this.listenTo(this.view, events.INVALIDATE, this._viewDidChange);
+    },
 
+    _initializeAutolayout: function(){
+        var size = this.getSize();
+        this._autolayout = {};
+        this._autolayout.width = autolayout.cv('width', size[0]);
+        this._autolayout.height = autolayout.cv('height', size[1]);
+    },
+
+    contextDidResize: function(){
+        var size = this.context.getSize();
+        this._autolayout.width.value = size[0];
+        this._autolayout.height.value = size[1];
+        this.view.setSize(size);
+        this.invalidateLayout();
+    },
+
+    invalidateLayout: function(){
+        this.root = null;
+    },
+
+    getSize: function(){
+        return _.result(this, 'size');
     },
 
     render: function(){
@@ -103,19 +143,20 @@ var FamousRegion = marionette.Region.extend({
         var root = new RenderNode();
         var relative = root;
         var context = this.context;
-
+        // relative = this.applyModifiers([this._autolayoutModifier], root);
         if(this.modifier){
             var modifiers = _.result(this, 'modifier');
             relative = this.applyModifiers(modifiers, root);
 
             this._modifier = modifiers;
         }
-
         relative.add(this.view);
+
         return root;
     },
 
     _viewDidChange: function(){
+        // console.log('VIEW DID CHANGE')
         this.view.root = null;
         this.root = null;
         this.trigger(events.INVALIDATE, this);
@@ -201,8 +242,12 @@ var FamousRegion = marionette.Region.extend({
 
         }
 
-        // view.context = this.context;
         this.view.addSubview(view);
+        var size = this.getSize();
+
+        if(size){
+            view.setSize(size);
+        }
     },
 
     // this is the default, i'll need to likely add stuff
