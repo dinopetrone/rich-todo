@@ -6,7 +6,6 @@ var template = require('hbs!../templates/header');
 
 var HeaderView = rich.ItemView.extend({
     template : template,
-    size: [200, 50],
     ui: {
         input: '#new-task'
     },

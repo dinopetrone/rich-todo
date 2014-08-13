@@ -9,33 +9,34 @@ var FooterView = require('./footer').FooterView;
 var Tasks = require('../collections/tasks').Tasks;
 var scroll = require('rich/scrollview');
 
-var TodoLayout = rich.LayoutView.extend({
-    regions: {
-        header: rich.Region.extend({
-            modifier: function(){
-                return new Modifier({
-                    origin: [0.5, 0],
-                    transform: Transform.translate(0, 20, 0)
-                });
-            }
-        }),
-        list: rich.Region.extend({
-            modifier: function(){
-                return new Modifier({
-                    origin: [0.5, 0],
-                    transform: Transform.translate(0, 70, 0)
-                });
-            }
-        }),
-        footer: rich.Region.extend({
-            modifier: function(){
-                return new Modifier({
-                    origin: [0.5, 1],
-                    transform: Transform.translate(0, -20, 0)
-                });
-            }
-        })
-    },
+var TodoLayout = rich.View.extend({
+
+    constraints: [
+        // {
+        //     item: 'headerView',
+        //     attribute: 'width',
+        //     relatedBy: '==',
+        //     toItem: 'superview',
+        //     toAttribute: 'width',
+        //     multiplier: 0.5
+        // },
+        {
+            item: 'headerView',
+            attribute: 'left',
+            relatedBy: '==',
+            toItem: 'superview',
+            toAttribute: 'width',
+            multiplier: 0.25
+        },
+        // {
+        //     item: 'headerView',
+        //     attribute: 'right',
+        //     relatedBy: '==',
+        //     toItem: 'superview',
+        //     toAttribute: 'width',
+        //     multiplier: 0.25
+        // },
+    ],
 
     initialize: function(){
         this.masterCollection = new Tasks();
@@ -48,14 +49,14 @@ var TodoLayout = rich.LayoutView.extend({
         }, this);
 
         this.filteredCollection.reset(this.masterCollection.models);
-
+        this.initializeViews();
     },
 
     shouldInitializeRenderable: function(){
         return false;
     },
 
-    onShow : function(){
+    initializeViews : function(){
         var options = {
             collection: this.filteredCollection,
             masterCollection: this.masterCollection
@@ -75,10 +76,13 @@ var TodoLayout = rich.LayoutView.extend({
         });
         scrollview.addSubview(this.listView);
 
+        this.headerView = new HeaderView(options);
+        this.addSubview(this.headerView);
+
         // show views
-        this.header.show(new HeaderView(options));
-        this.list.show(scrollview);
-        this.footer.show(new FooterView(options));
+        // this.header.show();
+        // this.list.show(scrollview);
+        // this.footer.show(new FooterView(options));
     },
 
     showActive: function(){
