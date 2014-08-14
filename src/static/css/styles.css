@@ -604,3 +604,7 @@ body {
 /* font extensions
 
 */
+/* line 2, ../scss/blocks/_site.scss */
+header input {
+  width: 100%;
+}

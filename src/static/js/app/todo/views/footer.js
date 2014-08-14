@@ -17,7 +17,6 @@ var FooterView = rich.ItemView.extend({
         'click .filter': 'wantsChangeFilter',
         'click #toggle-all': 'wantsToggleAll'
     },
-    size: [400, 50],
     wantsClearCompleted: function() {
         this.clearCompleted();
     },

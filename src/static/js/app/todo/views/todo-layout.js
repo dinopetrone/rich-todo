@@ -12,14 +12,14 @@ var scroll = require('rich/scrollview');
 var TodoLayout = rich.View.extend({
 
     constraints: [
-        // {
-        //     item: 'headerView',
-        //     attribute: 'width',
-        //     relatedBy: '==',
-        //     toItem: 'superview',
-        //     toAttribute: 'width',
-        //     multiplier: 0.5
-        // },
+        {
+            item: 'headerView',
+            attribute: 'width',
+            relatedBy: '==',
+            toItem: 'superview',
+            toAttribute: 'width',
+            multiplier: 0.5
+        },
         {
             item: 'headerView',
             attribute: 'left',
@@ -28,14 +28,20 @@ var TodoLayout = rich.View.extend({
             toAttribute: 'width',
             multiplier: 0.25
         },
-        // {
-        //     item: 'headerView',
-        //     attribute: 'right',
-        //     relatedBy: '==',
-        //     toItem: 'superview',
-        //     toAttribute: 'width',
-        //     multiplier: 0.25
-        // },
+        {
+            item: 'headerView',
+            attribute: 'right',
+            relatedBy: '==',
+            toItem: 'superview',
+            toAttribute: 'width',
+            multiplier: 0.25
+        },
+        {
+            item: 'headerView',
+            attribute: 'top',
+            constant: 30,
+            relatedBy: '==',
+        },
     ],
 
     initialize: function(){
@@ -68,7 +74,6 @@ var TodoLayout = rich.View.extend({
             contentSize: function(){
                 return listview.getSize();
             },
-            size: [400, 400],
             direction: scroll.DIRECTION_Y
         });
         this.listenTo(this.filteredCollection, 'add remove reset', function(){

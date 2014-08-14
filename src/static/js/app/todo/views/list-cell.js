@@ -5,7 +5,6 @@ var template = require('hbs!../templates/list-cell');
 
 var ListCellView = rich.ItemView.extend({
     template : template,
-    size: [400, 50],
     ui: {
         edit: '.edit',
         input: '.editor',
