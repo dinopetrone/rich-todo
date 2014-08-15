@@ -7,89 +7,89 @@ var HeaderView = require('./header').HeaderView;
 var ListCollectionView = require('./list').ListCollectionView;
 var FooterView = require('./footer').FooterView;
 var Tasks = require('../collections/tasks').Tasks;
-var scroll = require('rich/scrollview');
+var scroll = require('rich/scrollview/scrollview');
 
 var TodoLayout = rich.View.extend({
 
     constraints: [
-        {
-            item: 'headerView',
-            attribute: 'width',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.5
-        },
-        {
-            item: 'headerView',
-            attribute: 'height',
-            constant: 30,
-            relatedBy: '==',
-        },
-        {
-            item: 'headerView',
-            attribute: 'left',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.25
-        },
-        {
-            item: 'headerView',
-            attribute: 'right',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.25
-        },
-        {
-            item: 'headerView',
-            attribute: 'top',
-            constant: 30,
-            relatedBy: '==',
-        },
+        // {
+        //     item: 'headerView',
+        //     attribute: 'width',
+        //     relatedBy: '==',
+        //     toItem: 'superview',
+        //     toAttribute: 'width',
+        //     multiplier: 0.5
+        // },
+        // {
+        //     item: 'headerView',
+        //     attribute: 'height',
+        //     constant: 30,
+        //     relatedBy: '==',
+        // },
+        // {
+        //     item: 'headerView',
+        //     attribute: 'left',
+        //     relatedBy: '==',
+        //     toItem: 'superview',
+        //     toAttribute: 'width',
+        //     multiplier: 0.25
+        // },
+        // {
+        //     item: 'headerView',
+        //     attribute: 'right',
+        //     relatedBy: '==',
+        //     toItem: 'superview',
+        //     toAttribute: 'width',
+        //     multiplier: 0.25
+        // },
+        // {
+        //     item: 'headerView',
+        //     attribute: 'top',
+        //     constant: 30,
+        //     relatedBy: '==',
+        // },
 
-        // scrollview
-        {
-            item: 'scrollview',
-            attribute: 'width',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.5
-        },
-        {
-            item: 'scrollview',
-            attribute: 'left',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.25
-        },
-        {
-            item: 'scrollview',
-            attribute: 'right',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.25
-        },
-        {
-            item: 'scrollview',
-            attribute: 'top',
-            toItem: 'headerView',
-            toAttribute: 'bottom',
-            relatedBy: '==',
-        },
-        {
-            item: 'scrollview',
-            attribute: 'height',
-            toItem: 'superview',
-            toAttribute: 'height',
-            relatedBy: '==',
-            multiplier: 1,
-            constant: -140
-        },
+        // // scrollview
+        // {
+        //     item: 'scrollview',
+        //     attribute: 'width',
+        //     relatedBy: '==',
+        //     toItem: 'superview',
+        //     toAttribute: 'width',
+        //     multiplier: 0.5
+        // },
+        // {
+        //     item: 'scrollview',
+        //     attribute: 'left',
+        //     relatedBy: '==',
+        //     toItem: 'superview',
+        //     toAttribute: 'width',
+        //     multiplier: 0.25
+        // },
+        // {
+        //     item: 'scrollview',
+        //     attribute: 'right',
+        //     relatedBy: '==',
+        //     toItem: 'superview',
+        //     toAttribute: 'width',
+        //     multiplier: 0.25
+        // },
+        // {
+        //     item: 'scrollview',
+        //     attribute: 'top',
+        //     toItem: 'headerView',
+        //     toAttribute: 'bottom',
+        //     relatedBy: '==',
+        // },
+        // {
+        //     item: 'scrollview',
+        //     attribute: 'height',
+        //     toItem: 'superview',
+        //     toAttribute: 'height',
+        //     relatedBy: '==',
+        //     multiplier: 1,
+        //     constant: -140
+        // },
 
         // footer
         {
@@ -160,30 +160,28 @@ var TodoLayout = rich.View.extend({
         var listview = this.listView = new ListCollectionView(options);
 
 
-        var self = this;
-
         var scrollview = this.scrollview = new scroll.ScrollView({
-            contentSize: function(){
-                var size = self.scrollview.getSize();
-
-                return size;
-            },
+            contentSize: [800, 4000],
             direction: scroll.DIRECTION_Y
         });
-        this.listenTo(this.filteredCollection, 'add remove reset', function(){
-            scrollview.update();
-        });
 
-        scrollview.addSubview(this.listView);
+        // var scrollview = this.scrollview = new rich.ItemView({
+        //     nestedSubviews: true
+        // })
+
+
+        // this.listenTo(this.filteredCollection, 'add remove reset', function(){
+        //     scrollview.update();
+        // });
+
 
         this.headerView = new HeaderView(options);
         this.footerView = new FooterView(options);
 
-        // show views
-        // this.header.show();
-        // this.list.show(scrollview);
-        this.addSubview(this.headerView);
-        this.addSubview(scrollview);
+        scrollview.addSubview(this.headerView);
+
+        // this.addSubview(this.listView);
+        this.addSubview(this.scrollview);
         this.addSubview(this.footerView);
     },
 
