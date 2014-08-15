@@ -22,6 +22,12 @@ var TodoLayout = rich.View.extend({
         },
         {
             item: 'headerView',
+            attribute: 'height',
+            constant: 30,
+            relatedBy: '==',
+        },
+        {
+            item: 'headerView',
             attribute: 'left',
             relatedBy: '==',
             toItem: 'superview',
@@ -42,6 +48,88 @@ var TodoLayout = rich.View.extend({
             constant: 30,
             relatedBy: '==',
         },
+
+        // scrollview
+        {
+            item: 'scrollview',
+            attribute: 'width',
+            relatedBy: '==',
+            toItem: 'superview',
+            toAttribute: 'width',
+            multiplier: 0.5
+        },
+        {
+            item: 'scrollview',
+            attribute: 'left',
+            relatedBy: '==',
+            toItem: 'superview',
+            toAttribute: 'width',
+            multiplier: 0.25
+        },
+        {
+            item: 'scrollview',
+            attribute: 'right',
+            relatedBy: '==',
+            toItem: 'superview',
+            toAttribute: 'width',
+            multiplier: 0.25
+        },
+        {
+            item: 'scrollview',
+            attribute: 'top',
+            toItem: 'headerView',
+            toAttribute: 'bottom',
+            relatedBy: '==',
+        },
+        {
+            item: 'scrollview',
+            attribute: 'height',
+            toItem: 'superview',
+            toAttribute: 'height',
+            relatedBy: '==',
+            multiplier: 1,
+            constant: -140
+        },
+
+        // footer
+        {
+            item: 'footerView',
+            attribute: 'width',
+            relatedBy: '==',
+            toItem: 'superview',
+            toAttribute: 'width',
+            multiplier: 0.5
+        },
+        {
+            item: 'footerView',
+            attribute: 'left',
+            relatedBy: '==',
+            toItem: 'superview',
+            toAttribute: 'width',
+            multiplier: 0.25
+        },
+        {
+            item: 'footerView',
+            attribute: 'right',
+            relatedBy: '==',
+            toItem: 'superview',
+            toAttribute: 'width',
+            multiplier: 0.25
+        },
+        {
+            item: 'footerView',
+            attribute: 'bottom',
+            constant: 30,
+            relatedBy: '==',
+        },
+
+        {
+            item: 'footerView',
+            attribute: 'height',
+            constant: 30,
+            relatedBy: '==',
+        },
+
     ],
 
     initialize: function(){
@@ -70,24 +158,33 @@ var TodoLayout = rich.View.extend({
 
         // list view creation inside a scrollview
         var listview = this.listView = new ListCollectionView(options);
-        var scrollview = new scroll.ScrollView({
+
+
+        var self = this;
+
+        var scrollview = this.scrollview = new scroll.ScrollView({
             contentSize: function(){
-                return listview.getSize();
+                var size = self.scrollview.getSize();
+
+                return size;
             },
             direction: scroll.DIRECTION_Y
         });
         this.listenTo(this.filteredCollection, 'add remove reset', function(){
             scrollview.update();
         });
+
         scrollview.addSubview(this.listView);
 
         this.headerView = new HeaderView(options);
-        this.addSubview(this.headerView);
+        this.footerView = new FooterView(options);
 
         // show views
         // this.header.show();
         // this.list.show(scrollview);
-        // this.footer.show(new FooterView(options));
+        this.addSubview(this.headerView);
+        this.addSubview(scrollview);
+        this.addSubview(this.footerView);
     },
 
     showActive: function(){

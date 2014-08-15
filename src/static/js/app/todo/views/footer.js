@@ -17,6 +17,7 @@ var FooterView = rich.ItemView.extend({
         'click .filter': 'wantsChangeFilter',
         'click #toggle-all': 'wantsToggleAll'
     },
+
     wantsClearCompleted: function() {
         this.clearCompleted();
     },
@@ -35,6 +36,7 @@ var FooterView = rich.ItemView.extend({
     },
 
     changeFilter: function(status) {
+        console.log(status)
         backbone.history.navigate(status, {
             trigger:true
         });
