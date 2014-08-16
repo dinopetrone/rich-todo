@@ -832,9 +832,12 @@ var FamousView = marionette.View.extend({
         this._relationshipsInitialized = false;
         this._initializeAutolayoutDefaults();
 
-        this.children.each(function(subview){
-            subview.invalidateLayout();
-        });
+        if(this.children){
+            this.children.each(function(subview){
+                subview.invalidateLayout();
+            });
+        }
+
 
         if(this.root){
             this.root = null;
