@@ -136,7 +136,7 @@ var TodoLayout = rich.View.extend({
     initialize: function(){
         this.masterCollection = new Tasks();
         this.filteredCollection = new Tasks();
-        _.each(_.range(40), function(i){
+        _.each(_.range(100), function(i){
             this.masterCollection.add({
                 title:'hi'+(i+1),
                 isActive: Math.random() > 0.5

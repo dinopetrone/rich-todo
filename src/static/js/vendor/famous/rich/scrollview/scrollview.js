@@ -331,6 +331,10 @@ define(function(require, exports, module) {
                 this._scrollAnimationCallback();
             }
             var delta = data.delta;
+            var damp = 0.4;
+            delta[0] = delta[0] * damp;
+            delta[1] = delta[1] * damp;
+
             this._setScrollDirection(delta);
 
             // normalize the data based on direction
