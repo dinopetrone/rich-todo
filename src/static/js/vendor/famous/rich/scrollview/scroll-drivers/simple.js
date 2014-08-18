@@ -5,7 +5,7 @@ var PhysicsEngine = require('famous/physics/PhysicsEngine');
 
 
 var SimpleDriver = marionette.Controller.extend({
-    scrollDamp: 0.4,
+
     initialize: function(scrollView) {
         this.scrollView = scrollView;
 
@@ -17,12 +17,6 @@ var SimpleDriver = marionette.Controller.extend({
 
     shouldLimitPastBounds: function(){
         return true;
-    },
-
-    updateDelta: function(delta){
-        delta[0] = delta[0] * this.scrollDamp;
-        delta[1] = delta[1] * this.scrollDamp;
-        return delta;
     },
 
     // no op...we already told it to stop if you hit limits
