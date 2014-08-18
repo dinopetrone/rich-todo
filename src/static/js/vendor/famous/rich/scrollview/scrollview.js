@@ -330,10 +330,8 @@ define(function(require, exports, module) {
             if(this._scrollAnimationCallback){
                 this._scrollAnimationCallback();
             }
-            var delta = data.delta;
-            var damp = 0.4;
-            delta[0] = delta[0] * damp;
-            delta[1] = delta[1] * damp;
+            // dampening the difference to make it match the browser
+            var delta = this._driver.updateDelta(data.delta);
 
             this._setScrollDirection(delta);
 
