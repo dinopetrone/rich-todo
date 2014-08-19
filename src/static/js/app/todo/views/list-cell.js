@@ -4,6 +4,7 @@ var rich = require('rich');
 var template = require('hbs!../templates/list-cell');
 
 var ListCellView = rich.ItemView.extend({
+    className: 'list-cell',
     template : template,
     ui: {
         edit: '.edit',
@@ -12,7 +13,7 @@ var ListCellView = rich.ItemView.extend({
         title: '.title',
         checkbox: '.checkbox'
     },
-    size: [true, 30],
+    size:[800, 100],
     events: {
         'click @ui.remove': 'wantsRemove',
         'click @ui.edit': 'editClick',

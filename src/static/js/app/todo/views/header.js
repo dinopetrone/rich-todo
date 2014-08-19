@@ -35,7 +35,7 @@ var HeaderView = rich.ItemView.extend({
     createTask: function(name) {
         var model = this.masterCollection.add({
             title: name
-        })
+        });
         this.collection.add(model);
     }
 });
