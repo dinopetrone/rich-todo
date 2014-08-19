@@ -26,7 +26,7 @@ var TodoLayout = rich.View.extend({
         {
             item: 'headerView',
             attribute: 'height',
-            constant: 30,
+            constant: 125,
             relatedBy: '==',
         },
         {
@@ -91,7 +91,7 @@ var TodoLayout = rich.View.extend({
             toAttribute: 'height',
             relatedBy: '==',
             multiplier: 1,
-            constant: -140
+            constant: -300
         },
 
         // footer
@@ -121,15 +121,18 @@ var TodoLayout = rich.View.extend({
         },
         {
             item: 'footerView',
-            attribute: 'bottom',
-            constant: 30,
+            attribute: 'top',
             relatedBy: '==',
+            toItem: 'scrollview',
+            toAttribute: 'bottom',
+            multiplier: 1,
+            constant: 15
         },
 
         {
             item: 'footerView',
             attribute: 'height',
-            constant: 30,
+            constant: 50,
             relatedBy: '==',
         },
 
