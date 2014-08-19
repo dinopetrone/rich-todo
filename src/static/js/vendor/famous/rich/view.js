@@ -43,7 +43,7 @@ var FamousView = marionette.View.extend({
         this.children = new backbone.ChildViewContainer();
 
         /* >>> BEGIN marionette.View() override */
-         _.bindAll(this, 'render');
+         _.bindAll(this, 'render', 'invalidateView');
 
         // this exposes view options to the view initializer
         // this is a backfill since backbone removed the assignment
@@ -420,7 +420,7 @@ var FamousView = marionette.View.extend({
 
         if(this.root){
             this.invalidateLayout();
-            this.triggerRichInvalidate();
+            this.invalidateView();
         }
     },
 
@@ -449,7 +449,7 @@ var FamousView = marionette.View.extend({
 
         if(this.root){
             this.invalidateLayout();
-            this.triggerRichInvalidate();
+            this.invalidateView();
         }
 
     },
@@ -489,7 +489,7 @@ var FamousView = marionette.View.extend({
 
         if(this.root){
             this.invalidateLayout();
-            this.triggerRichInvalidate();
+            this.invalidateView();
         }
     },
 
@@ -522,7 +522,7 @@ var FamousView = marionette.View.extend({
 
         if(this.root){
             this.invalidateLayout();
-            this.triggerRichInvalidate();
+            this.invalidateView();
         }
     },
 
@@ -582,18 +582,20 @@ var FamousView = marionette.View.extend({
     },
 
     render: function(){
-
         if(this.root === null || this.needsDisplay()){
-            if(!this._constraintsInitialized){
-                this._initializeConstraints();
-            }
             this._render();
         }
+
         return this._spec;
     },
 
     _render: function(){
         var spec;
+
+        if(!this._constraintsInitialized){
+            this._initializeConstraints();
+        }
+
         this.root = this.createRenderNode();
 
         spec = this.root.render();
@@ -614,6 +616,11 @@ var FamousView = marionette.View.extend({
     },
 
     setNeedsDisplay: function(value){
+        if(value){
+            Engine.on('postrender', this.invalidateView);
+        }else{
+            Engine.removeListener('postrender', this.invalidateView);
+        }
         this._needsDisplay = value;
     },
 
@@ -702,7 +709,7 @@ var FamousView = marionette.View.extend({
         return root;
     },
 
-    addSubview: function(view, zIndex){
+    prepareSubviewAdd: function(view, zIndex){
         view.superview = this;
 
         function setZIndex(value){
@@ -718,6 +725,27 @@ var FamousView = marionette.View.extend({
 
         this.listenTo(view, events.INVALIDATE, this.subviewDidChange);
         this.children.add(view);
+    },
+
+    addSubview: function(view, zIndex){
+        this.prepareSubviewAdd(view, zIndex);
+
+        if(this.root){
+            this.invalidateView();
+        }
+    },
+
+    prepareSubviewRemove: function(view){
+        view.superview = null;
+        view.context = null;
+        view.invalidateLayout();
+
+        this.children.remove(view);
+        this.stopListening(view, events.INVALIDATE, this.subviewDidChange);
+    },
+
+    removeSubview: function(view){
+        this.prepareSubviewRemove(view);
 
         if(this.root){
             this.invalidateView();
@@ -828,19 +856,6 @@ var FamousView = marionette.View.extend({
         return modifiersLen;
     },
 
-    removeSubview: function(view){
-        view.superview = null;
-        view.context = null;
-        view.invalidateLayout();
-
-        this.children.remove(view);
-        this.stopListening(view, events.INVALIDATE, this.subviewDidChange);
-
-        if(this.root){
-            this.invalidateView();
-        }
-    },
-
     removeFromSuperview: function(){
         this.superview.removeSubview(this);
     },
@@ -856,12 +871,13 @@ var FamousView = marionette.View.extend({
         //     var variables = [vars.width, vars.height];
         //     this.updateVariables(variables, value);
         // } else {
-        //     console.log('HERE', value);
         //     vars.width.value = value[0];
         //     vars.height.value = value[1];
         // }
 
-        this.invalidateLayout();
+        if(this.root){
+            this.invalidateLayout();
+        }
     },
 
     getSize: function(){

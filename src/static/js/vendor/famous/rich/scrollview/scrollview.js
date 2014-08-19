@@ -17,7 +17,7 @@ define(function(require, exports, module) {
     GenericSync.register({
         "touch": TouchSync,
         "scroll": ScrollSync,
-        "mouse": MouseSync
+        // "mouse": MouseSync
     });
 
     var DIRECTION_X = GenericSync.DIRECTION_X;
@@ -27,12 +27,11 @@ define(function(require, exports, module) {
         renderable: null,
         nestedSubviews: true,
         _hasStalledCount: 0,
-        _previousPosition: [0, 0],
+        _idleIncrement: 0,
         _directionalLockEnabled: true,
         _scrollEnabled: true,
 
         constructor: function(options) {
-            // this.setNeedsDisplay(true);
             options || (options = {});
             _.bindAll(this, '_onScrollUpdate', '_onScrollStart', '_onScrollEnd', 'triggerScrollUpdate');
 
@@ -236,27 +235,30 @@ define(function(require, exports, module) {
         },
 
         _onFamousRender: function() {
-            var pos = this._particle.getPosition();
-            if (this._previousPosition) {
-                var yChange = Math.round(this._previousPosition[1] - pos[1]);
-                var xChange = Math.round(this._previousPosition[0] - pos[0]);
-                if (!xChange && !yChange) {
-                    this._hasStalledCount++;
-                    if (this._hasStalledCount > 10) {
-                        this._scrollableView.setNeedsDisplay(false);
-                        this.trigger('scroll:bouncecomplete', this.getScrollPosition());
-                        this._scrollableView.off(events.RENDER, this.triggerScrollUpdate);
-                    }
-                } else {
-                    this._hasStalledCount = 0;
-                }
-            }
-            this._previousPosition = pos;
+            var v = this._particle.getVelocity();
+            var xVelocity = Math.round(Math.abs(v[0])*1000);
+            var yVelocity = Math.round(Math.abs(v[1])*1000);
 
+            // famous requires that you get the position every frame or else
+            // it won't update the value of that item.  this normally happens
+            // by doing a positionFrom, but because we turn that on and off
+            // we have to manually get the position for it to update each frame
+            this._particle.getPosition();
+
+
+            if(!yVelocity && !xVelocity){
+                this._idleIncrement ++;
+            }else{
+                this._idleIncrement = 0;
+            }
+            // if the velocity has sat at 0 for 300 frames, kill the render
+            if(this._idleIncrement > 300){
+                this._scrollableView.setNeedsDisplay(false);
+            }
         },
 
         _bindScrollEvents: function() {
-            var events = ['touchstart', 'touchmove', 'touchend', 'mousewheel', 'wheel', 'mousedown', 'mousemove', 'mouseup'];
+            var events = ['touchstart', 'touchmove', 'touchend', 'mousewheel', 'wheel'];
             var self = this;
             _.each(events, function(type) {
                 this.$el.on(type, function(e) {
@@ -267,10 +269,7 @@ define(function(require, exports, module) {
 
             this.sync = new GenericSync({
                 "scroll": {},
-                "touch": {},
-                "mouse": {
-                    scale: 5
-                }
+                "touch": {}
             });
 
             if (this._scrollEnabled) {
@@ -284,18 +283,16 @@ define(function(require, exports, module) {
         },
 
         _onScrollStart: function(data) {
-            this.setNeedsDisplay(true);
             this._scrollableView.setNeedsDisplay(true);
             this._scrollDirection = null;
+            this._idleIncrement = 0;
             this.trigger('scroll:start', this.getScrollPosition());
         },
 
 
         _onScrollEnd: function(data) {
-            this.setNeedsDisplay(false);
-            this._scrollableView.setNeedsDisplay(false);
             this.trigger('scroll:end', this.getScrollPosition());
-            this._driver.updateComplete(data.velocity);
+            this._driver.wantsThrow(data.velocity);
         },
 
         _setScrollDirection: function(delta) {
@@ -417,14 +414,17 @@ define(function(require, exports, module) {
             if(!shouldScroll)return;
 
 
-
             // we check with the driver to see if it wants to limit the position of the
             // scroll when we are updating via scroll
             this.setScrollPosition(boundsInfo.gotoPosX, boundsInfo.gotoPosY, null, this._driver.shouldLimitPastBounds());
+
+            // give the driver an opportunity to take control of the particle
+            // add a bounce for example
             this._driver.updateParticle(boundsInfo.isPastLimits, boundsInfo.anchorPoint, data.velocity);
+
+
+            // trigger event handler
             this.triggerScrollUpdate();
-
-
         },
 
     });
