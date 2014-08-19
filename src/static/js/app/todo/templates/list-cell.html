@@ -1,28 +1,5 @@
-<!-- Squared TWO -->
-<div class="squaredTwo">
-    <input type="checkbox" class='checkbox' value="None" id="squaredTwo{{title}}" name="check" {{#if isActive}} {{else}}checked{{/if}}/>
-    <label for="squaredTwo{{title}}"></label>
-</div>
-<p class='title' for='{{title}}'>{{title}}</p>
-
-
-<!-- <input type="checkbox" value="None" name="vehicle" class='checkbox' {{#if isActive}} {{else}}checked{{/if}}> -->
-
-<!-- <button class='edit'>Edit</button> -->
-<!-- <button class='destroy'>Remove</button> -->
-
-<div class="ui fluid icon input">
-    <input class='editor' placeholder={{title}}></input>
-</div>
-<div class="ui animated red button destroy">
-  <div class="visible content">Remove</div>
-  <div class="hidden content">
-    <i class="trash icon"></i>
-  </div>
-</div>
-<div class="ui animated green button edit">
-  <div class="visible content">Edit</div>
-  <div class="hidden content">
-    <i class="edit icon"></i>
-  </div>
-</div>
+<input type="checkbox" name="vehicle" class='checkbox' {{#if isActive}} {{else}}checked{{/if}}>
+<label class='title' for='{{title}}'>{{title}}</label>
+<button class='edit'>Edit</button>
+<button class='destroy'>Remove</button>
+<input class='editor' placeholder={{title}}></input>

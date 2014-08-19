@@ -7,10 +7,10 @@ var template = require('hbs!../templates/header');
 var HeaderView = rich.ItemView.extend({
     template : template,
     ui: {
-        input: '#new-task'
+        input: '#new-todo'
     },
     events: {
-        'keypress #new-task': 'onInputConfirm'
+        'keypress #new-todo': 'onInputConfirm'
     },
     initialize : function(options){
         this.masterCollection = options.masterCollection;

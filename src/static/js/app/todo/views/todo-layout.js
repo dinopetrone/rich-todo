@@ -48,7 +48,7 @@ var TodoLayout = rich.View.extend({
         {
             item: 'headerView',
             attribute: 'top',
-            constant: 30,
+            constant: 130,
             relatedBy: '==',
         },
 
@@ -59,7 +59,7 @@ var TodoLayout = rich.View.extend({
             relatedBy: '==',
             toItem: 'superview',
             toAttribute: 'width',
-            multiplier: .8
+            multiplier: 0.5
         },
         {
             item: 'scrollview',
@@ -67,7 +67,7 @@ var TodoLayout = rich.View.extend({
             relatedBy: '==',
             toItem: 'superview',
             toAttribute: 'width',
-            multiplier: 0.1
+            multiplier: 0.25
         },
         {
             item: 'scrollview',
@@ -75,7 +75,7 @@ var TodoLayout = rich.View.extend({
             relatedBy: '==',
             toItem: 'superview',
             toAttribute: 'width',
-            multiplier: 0.1
+            multiplier: 0.25
         },
         {
             item: 'scrollview',

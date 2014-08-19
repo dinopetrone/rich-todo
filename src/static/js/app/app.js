@@ -5,7 +5,7 @@ define(function(require, exports, module) {
 
     app.addRegions({
         todo: rich.Region.extend({
-            el:'body'
+            el:'.todoapp'
         }),
     });
 
