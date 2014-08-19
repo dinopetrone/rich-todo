@@ -21363,12 +21363,13 @@ ol.ui.horizontal.list li:before,
 
 /* line 35, ../scss/page/_todo.scss */
 .count {
-  margin-bottom: 10px;
-  display: block;
+  position: relative;
+  top: -8px;
+  left: -4px;
 }
 
 /* SQUARED TWO */
-/* line 41, ../scss/page/_todo.scss */
+/* line 42, ../scss/page/_todo.scss */
 .squaredTwo {
   width: 28px;
   height: 28px;
@@ -21387,7 +21388,7 @@ ol.ui.horizontal.list li:before,
   position: relative;
 }
 
-/* line 60, ../scss/page/_todo.scss */
+/* line 61, ../scss/page/_todo.scss */
 .squaredTwo label {
   cursor: pointer;
   position: absolute;
@@ -21406,7 +21407,7 @@ ol.ui.horizontal.list li:before,
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#222', endColorstr='#45484d',GradientType=0 );
 }
 
-/* line 80, ../scss/page/_todo.scss */
+/* line 81, ../scss/page/_todo.scss */
 .squaredTwo label:after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
   filter: alpha(opacity=0);
@@ -21428,14 +21429,14 @@ ol.ui.horizontal.list li:before,
   transform: rotate(-45deg);
 }
 
-/* line 102, ../scss/page/_todo.scss */
+/* line 103, ../scss/page/_todo.scss */
 .squaredTwo label:hover::after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
   filter: alpha(opacity=30);
   opacity: 0.3;
 }
 
-/* line 108, ../scss/page/_todo.scss */
+/* line 109, ../scss/page/_todo.scss */
 .squaredTwo input[type=checkbox]:checked + label:after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
   filter: alpha(opacity=100);
