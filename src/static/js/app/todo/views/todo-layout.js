@@ -163,9 +163,9 @@ var TodoLayout = rich.View.extend({
         };
 
         // list view creation inside a scrollview
-        // var listview = this.listView = new ListCollectionView(options);
+        var listview = this.listView = new ListCollectionView(options);
 
-        var listview = this.listView = new LongView();
+        // var listview = this.listView = new LongView();
 
 
 
