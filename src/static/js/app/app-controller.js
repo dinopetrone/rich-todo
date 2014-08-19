@@ -11,7 +11,7 @@ var AppController = marionette.Controller.extend({
     initialize: function(options){
         this.app = app;
         this.todo = new TodoLayout();
-        this.app.todo.show(this.todo);
+        this.app.todo.addSubview(this.todo);
     },
 
     index: function(){

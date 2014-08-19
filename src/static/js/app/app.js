@@ -3,11 +3,11 @@ define(function(require, exports, module) {
     var app = new marionette.Application();
     var rich = require('rich');
 
-    app.addRegions({
-        todo: rich.Region.extend({
-            el:'body'
-        }),
-    });
+    app.addRichContexts({
+        todo:{
+            el: 'body'
+        }
+    })
 
     app.addInitializer(function() {
         Backbone.history.start({
