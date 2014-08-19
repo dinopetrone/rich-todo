@@ -10,19 +10,19 @@
 
 <!-- <button class='edit'>Edit</button> -->
 <!-- <button class='destroy'>Remove</button> -->
-
-<div class="ui fluid icon input">
-    <input class='editor' placeholder={{title}}></input>
+<div class="ui icon input pencil editor-input">
+  <input class="editor" type="text" placeholder={{title}}>
+  <i class="icon"></i>
 </div>
-<div class="ui animated red button destroy">
+<div class="ui animated red button destroy-button">
   <div class="visible content">Remove</div>
-  <div class="hidden content">
-    <i class="trash icon"></i>
+  <div class="hidden content correct-center">
+    <i class="large trash icon"></i>
   </div>
 </div>
-<div class="ui animated green button edit">
+<div class="ui animated green button edit-button">
   <div class="visible content">Edit</div>
-  <div class="hidden content">
-    <i class="edit icon"></i>
+  <div class="hidden content correct-center">
+    <i class="large edit icon"></i>
   </div>
 </div>

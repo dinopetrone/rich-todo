@@ -7,7 +7,7 @@ define(function(require, exports, module) {
         todo:{
             el: 'body'
         }
-    })
+    });
 
     app.addInitializer(function() {
         Backbone.history.start({

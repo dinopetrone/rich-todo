@@ -10,133 +10,17 @@ var Tasks = require('../collections/tasks').Tasks;
 var scroll = require('rich/scrollview/scrollview');
 var BounceDriver = require('rich/scrollview/scroll-drivers/bounce').BounceDriver;
 var LongView = require('app/shared/views/long-view').LongView;
-
+var constraints = require('app/todo/constraints/todo-layout');
 
 var TodoLayout = rich.View.extend({
 
-    constraints: [
-        {
-            item: 'headerView',
-            attribute: 'width',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.5
-        },
-        {
-            item: 'headerView',
-            attribute: 'height',
-            constant: 125,
-            relatedBy: '==',
-        },
-        {
-            item: 'headerView',
-            attribute: 'left',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.25
-        },
-        {
-            item: 'headerView',
-            attribute: 'right',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.25
-        },
-        {
-            item: 'headerView',
-            attribute: 'top',
-            constant: 30,
-            relatedBy: '==',
-        },
-
-        // scrollview
-        {
-            item: 'scrollview',
-            attribute: 'width',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: .8
-        },
-        {
-            item: 'scrollview',
-            attribute: 'left',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.1
-        },
-        {
-            item: 'scrollview',
-            attribute: 'right',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.1
-        },
-        {
-            item: 'scrollview',
-            attribute: 'top',
-            toItem: 'headerView',
-            toAttribute: 'bottom',
-            relatedBy: '==',
-        },
-        {
-            item: 'scrollview',
-            attribute: 'height',
-            toItem: 'superview',
-            toAttribute: 'height',
-            relatedBy: '==',
-            multiplier: 1,
-            constant: -300
-        },
-
-        // footer
-        {
-            item: 'footerView',
-            attribute: 'width',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.5
-        },
-        {
-            item: 'footerView',
-            attribute: 'left',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.25
-        },
-        {
-            item: 'footerView',
-            attribute: 'right',
-            relatedBy: '==',
-            toItem: 'superview',
-            toAttribute: 'width',
-            multiplier: 0.25
-        },
-        {
-            item: 'footerView',
-            attribute: 'top',
-            relatedBy: '==',
-            toItem: 'scrollview',
-            toAttribute: 'bottom',
-            multiplier: 1,
-            constant: 15
-        },
-
-        {
-            item: 'footerView',
-            attribute: 'height',
-            constant: 50,
-            relatedBy: '==',
-        },
-
-    ],
+    constraints: function(){
+        if (window.outerWidth > 1630) {
+            return constraints.large;
+        } else if (window.outerWidth > 960 && window.outerWidth < 1630){
+            return constraints.medium;
+        }
+    },
 
     initialize: function(){
         this.masterCollection = new Tasks();

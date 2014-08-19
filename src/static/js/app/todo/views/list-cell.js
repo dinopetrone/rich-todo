@@ -7,9 +7,9 @@ var ListCellView = rich.ItemView.extend({
     className: 'list-cell',
     template : template,
     ui: {
-        edit: '.edit',
+        edit: '.edit-button',
         input: '.editor',
-        remove: '.destroy',
+        remove: '.destroy-button',
         title: '.title',
         checkbox: '.checkbox'
     },

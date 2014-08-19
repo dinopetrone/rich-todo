@@ -21,14 +21,23 @@
     line-height: 1;
 }
 
+.editor-input {
+    width: 60% !important;
+    position: relative;
+    left: -40px;
+}
 
 .animated {
     position: absolute !important;
     right: 0 !important;
-    top: 0 !important;
+    top: 3px !important;
 
     &.green {
         right: 125px !important;
+    }
+
+    .correct-center {
+        top: 45% !important;
     }
 }
 
@@ -110,4 +119,13 @@
     -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
     filter: alpha(opacity=100);
     opacity: 1;
+}
+
+
+/* iPads (portrait) ----------- */
+@media only screen
+and (min-device-width : 768px)
+and (max-device-width : 1024px)
+and (orientation : portrait) {
+
 }

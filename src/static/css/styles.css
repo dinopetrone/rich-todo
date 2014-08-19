@@ -21350,18 +21350,29 @@ ol.ui.horizontal.list li:before,
   line-height: 1;
 }
 
-/* line 25, ../scss/page/_todo.scss */
+/* line 24, ../scss/page/_todo.scss */
+.editor-input {
+  width: 60% !important;
+  position: relative;
+  left: -40px;
+}
+
+/* line 30, ../scss/page/_todo.scss */
 .animated {
   position: absolute !important;
   right: 0 !important;
-  top: 0 !important;
+  top: 3px !important;
 }
-/* line 30, ../scss/page/_todo.scss */
+/* line 35, ../scss/page/_todo.scss */
 .animated.green {
   right: 125px !important;
 }
+/* line 39, ../scss/page/_todo.scss */
+.animated .correct-center {
+  top: 45% !important;
+}
 
-/* line 35, ../scss/page/_todo.scss */
+/* line 44, ../scss/page/_todo.scss */
 .count {
   position: relative;
   top: -8px;
@@ -21369,7 +21380,7 @@ ol.ui.horizontal.list li:before,
 }
 
 /* SQUARED TWO */
-/* line 42, ../scss/page/_todo.scss */
+/* line 51, ../scss/page/_todo.scss */
 .squaredTwo {
   width: 28px;
   height: 28px;
@@ -21388,7 +21399,7 @@ ol.ui.horizontal.list li:before,
   position: relative;
 }
 
-/* line 61, ../scss/page/_todo.scss */
+/* line 70, ../scss/page/_todo.scss */
 .squaredTwo label {
   cursor: pointer;
   position: absolute;
@@ -21407,7 +21418,7 @@ ol.ui.horizontal.list li:before,
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#222', endColorstr='#45484d',GradientType=0 );
 }
 
-/* line 81, ../scss/page/_todo.scss */
+/* line 90, ../scss/page/_todo.scss */
 .squaredTwo label:after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
   filter: alpha(opacity=0);
@@ -21429,16 +21440,18 @@ ol.ui.horizontal.list li:before,
   transform: rotate(-45deg);
 }
 
-/* line 103, ../scss/page/_todo.scss */
+/* line 112, ../scss/page/_todo.scss */
 .squaredTwo label:hover::after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
   filter: alpha(opacity=30);
   opacity: 0.3;
 }
 
-/* line 109, ../scss/page/_todo.scss */
+/* line 118, ../scss/page/_todo.scss */
 .squaredTwo input[type=checkbox]:checked + label:after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
   filter: alpha(opacity=100);
   opacity: 1;
 }
+
+/* iPads (portrait) ----------- */
