@@ -122,10 +122,12 @@
 }
 
 
-/* iPads (portrait) ----------- */
+/* Smartphones (portrait) ----------- */
 @media only screen
-and (min-device-width : 768px)
-and (max-device-width : 1024px)
-and (orientation : portrait) {
-
+and (max-width : 640px) {
+    .footer-btn {
+        font-size: .5em !important;
+        padding-top: 2em !important;
+        padding-bottom: 2em !important;
+    }
 }

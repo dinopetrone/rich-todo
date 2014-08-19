@@ -17,7 +17,7 @@ var ListCollectionView =  rich.CollectionView.extend({
     },
 
     modifierForViewAtIndex: function(view, index){
-        var offset = index * 100;
+        var offset = index * 50;
         return new Modifier({
             transform: Transform.translate(0, offset, 0)
         });

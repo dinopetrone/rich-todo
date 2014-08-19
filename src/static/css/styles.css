@@ -21454,4 +21454,12 @@ ol.ui.horizontal.list li:before,
   opacity: 1;
 }
 
-/* iPads (portrait) ----------- */
+/* Smartphones (portrait) ----------- */
+@media only screen and (max-width: 640px) {
+  /* line 128, ../scss/page/_todo.scss */
+  .footer-btn {
+    font-size: .5em !important;
+    padding-top: 2em !important;
+    padding-bottom: 2em !important;
+  }
+}

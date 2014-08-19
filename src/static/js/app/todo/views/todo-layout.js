@@ -15,9 +15,9 @@ var constraints = require('app/todo/constraints/todo-layout');
 var TodoLayout = rich.View.extend({
 
     constraints: function(){
-        if (window.outerWidth > 1630) {
+        if (window.outerWidth > 1028) {
             return constraints.large;
-        } else if (window.outerWidth > 960 && window.outerWidth < 1630){
+        } else {
             return constraints.medium;
         }
     },
@@ -25,7 +25,7 @@ var TodoLayout = rich.View.extend({
     initialize: function(){
         this.masterCollection = new Tasks();
         this.filteredCollection = new Tasks();
-        _.each(_.range(100), function(i){
+        _.each(_.range(35), function(i){
             this.masterCollection.add({
                 title:'hi'+(i+1),
                 isActive: Math.random() > 0.5
