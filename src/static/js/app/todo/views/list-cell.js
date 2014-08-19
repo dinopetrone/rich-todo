@@ -13,7 +13,7 @@ var ListCellView = rich.ItemView.extend({
         title: '.title',
         checkbox: '.checkbox'
     },
-    size:[800, 50],
+    size:[800, 60],
     events: {
         'click @ui.remove': 'wantsRemove',
         'click @ui.edit': 'editClick',

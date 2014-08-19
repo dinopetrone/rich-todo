@@ -2,6 +2,13 @@
     width: 100%;
 }
 
+.list-cell {
+    -webkit-box-shadow: 10px 10px 16px 0px rgba(0,0,0,0.33);
+    -moz-box-shadow: 10px 10px 16px 0px rgba(0,0,0,0.33);
+    box-shadow: 10px 10px 16px 0px rgba(0,0,0,0.33);
+    // border-left: 1px solid #fff;
+    // border-top: 1px solid #fff;
+}
 .todo-header {
     font-family: 'Poiret One', Arial, Helvetica, sans-serif;
     text-shadow: 0px 0px 6px rgba(255,255,255,0.7);
@@ -29,11 +36,11 @@
 
 .animated {
     position: absolute !important;
-    right: 0 !important;
+    right: 12px !important;
     top: 3px !important;
 
     &.green {
-        right: 125px !important;
+        right: 137px !important;
     }
 
     .correct-center {
