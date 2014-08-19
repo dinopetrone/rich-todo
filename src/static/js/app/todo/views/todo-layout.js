@@ -9,6 +9,8 @@ var FooterView = require('./footer').FooterView;
 var Tasks = require('../collections/tasks').Tasks;
 var scroll = require('rich/scrollview/scrollview');
 var BounceDriver = require('rich/scrollview/scroll-drivers/bounce').BounceDriver;
+var LongView = require('app/shared/views/long-view').LongView;
+
 
 var TodoLayout = rich.View.extend({
 
@@ -57,7 +59,7 @@ var TodoLayout = rich.View.extend({
             relatedBy: '==',
             toItem: 'superview',
             toAttribute: 'width',
-            multiplier: 0.5
+            multiplier: .8
         },
         {
             item: 'scrollview',
@@ -65,7 +67,7 @@ var TodoLayout = rich.View.extend({
             relatedBy: '==',
             toItem: 'superview',
             toAttribute: 'width',
-            multiplier: 0.25
+            multiplier: 0.1
         },
         {
             item: 'scrollview',
@@ -73,7 +75,7 @@ var TodoLayout = rich.View.extend({
             relatedBy: '==',
             toItem: 'superview',
             toAttribute: 'width',
-            multiplier: 0.25
+            multiplier: 0.1
         },
         {
             item: 'scrollview',
@@ -163,11 +165,17 @@ var TodoLayout = rich.View.extend({
         // list view creation inside a scrollview
         var listview = this.listView = new ListCollectionView(options);
 
+        // var listview = this.listView = new LongView();
+
+
+
+
         // console.log(scroll.ScrollView)
         var scrollview = this.scrollview = new scroll.ScrollView({
             contentSize: function(){
                 var size = listview.getSize();
-                return [800, size[1]];
+                // return [800, size[1]];
+                return [800, 2000];
             },
             direction: scroll.DIRECTION_Y,
             nestedSubviews: true,
