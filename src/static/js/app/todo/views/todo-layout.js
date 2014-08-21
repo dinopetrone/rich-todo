@@ -25,7 +25,7 @@ var TodoLayout = rich.View.extend({
     initialize: function(){
         this.masterCollection = new Tasks();
         this.filteredCollection = new Tasks();
-        _.each(_.range(35), function(i){
+        _.each(_.range(40), function(i){
             this.masterCollection.add({
                 title:'hi'+(i+1),
                 isActive: Math.random() > 0.5
@@ -43,7 +43,8 @@ var TodoLayout = rich.View.extend({
     initializeViews : function(){
         var options = {
             collection: this.filteredCollection,
-            masterCollection: this.masterCollection
+            masterCollection: this.masterCollection,
+            spacing: 0
         };
 
         // list view creation inside a scrollview
@@ -57,7 +58,7 @@ var TodoLayout = rich.View.extend({
         // console.log(scroll.ScrollView)
         var scrollview = this.scrollview = new scroll.ScrollView({
             contentSize: function(){
-                if(listview.children.length == 0){
+                if(listview.children.length === 0){
                     return [0, 0];
                 }
                 var size = listview.children.findByIndex(0).getSize();
@@ -93,7 +94,7 @@ var TodoLayout = rich.View.extend({
     },
 
     showAll: function(){
-        this.filteredCollection.reset(this.masterCollection.models);
+        // this.filteredCollection.reset(this.masterCollection.models);
     },
 });
 

@@ -117,7 +117,7 @@ define(function (require, exports, module) {
         {
             item: 'footerView',
             attribute: 'height',
-            constant: 50,
+            constant: 150,
             relatedBy: '==',
         },
     ];
