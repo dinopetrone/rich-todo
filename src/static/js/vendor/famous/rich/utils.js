@@ -84,7 +84,10 @@ function postrenderOnce(callback){
         callback();
     };
 
-    Engine.on('postrender', postrender);
+    setTimeout(function(){
+        Engine.on('postrender', postrender);
+    }, 20);
+
 }
 
 

@@ -287,6 +287,7 @@ define(function (require, exports, module) {
         // later views in the collection in order to keep
         // the children in sync with the collection.
         removeChildView: function(view) {
+
             if (view) {
                 this.triggerMethod('before:remove:child', view);
                 // call 'destroy' or 'remove', depending on which is found
@@ -294,17 +295,34 @@ define(function (require, exports, module) {
                 else if (view.remove) { view.remove(); }
 
                 this.stopListening(view);
-
-                /**
-                 * RICH CHANGE: from this.children.remove(view) to
-                 * this.removeSubview(view).
-                 */
-                this.removeSubview(view);
+                //this.children.remove(view);
+                this.prepareSubviewRemove(view);
                 this.triggerMethod('remove:child', view);
 
                 // decrement the index of views after this one
                 this._updateIndices(view, false);
+
+                var constraints = [];
+
+                constraints = constraints.concat(this._processIntrinsicConstraints(
+                    _.result(this, 'constraints')
+                ));
+
+                var action = this.orientation == 'vertical' ?
+                    this.applyVerticalConstraints.bind(this) :
+                    this.applyHorizntalConstraints.bind(this);
+
+                this.children.each(function(view, index){
+                    //view.invalidateLayout();
+                    constraints = constraints.concat(action(view, index));
+                }, this);
+
+                this._constraints = constraints;
+                this._constraintsInitialized = false;
+                this.invalidateView();
             }
+
+            return view;
         },
 
         startBuffering: function(){
