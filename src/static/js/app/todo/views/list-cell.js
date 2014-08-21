@@ -13,12 +13,12 @@ var ListCellView = rich.ItemView.extend({
         title: '.title',
         checkbox: '.checkbox'
     },
-    size:[800, 60],
+    // size:[800, 60],
     events: {
         'click @ui.remove': 'wantsRemove',
-        'click @ui.edit': 'editClick',
-        'keypress @ui.input': 'editAccept',
-        'click @ui.checkbox': 'switchState'
+        'click @ui.edit': 'wantsEdit',
+        'keypress @ui.input': 'wantsSubmit',
+        'click @ui.checkbox': 'wantsSwitchState'
     },
 
     initialize: function(options) {
@@ -29,7 +29,7 @@ var ListCellView = rich.ItemView.extend({
         this.ui.input.hide();
     },
 
-    editClick: function() {
+    wantsEdit: function() {
         var editBoxHidden = this.ui.input.css('display') === 'none';
         if (editBoxHidden) {
             this.ui.input.show().focus();
@@ -38,7 +38,7 @@ var ListCellView = rich.ItemView.extend({
         }
     },
 
-    editAccept: function(event) {
+    wantsSubmit: function(event) {
         var taskString = this.ui.input.val().trim();
         if (event.which === 13 && taskString) {
             this.model.set('title', taskString);
@@ -49,7 +49,7 @@ var ListCellView = rich.ItemView.extend({
         }
     },
 
-    switchState: function() {
+    wantsSwitchState: function() {
         console.log(this.model.get('title'));
         this.model.toggleIsActive();
     },
