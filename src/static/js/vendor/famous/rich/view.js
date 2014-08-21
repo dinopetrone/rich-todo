@@ -484,8 +484,7 @@ var FamousView = marionette.View.extend({
 
             // bookkeeping - very costly bookkeeping
             // not happy with this at all, need to look into
-            // building a tree out of that data maybe to make these
-            // easier to remove without this overhead.
+            // ways to handle this withough all this overhead.
             delete this._constraintsIndex[constraint.cid];
             for(var j = index; j < this._constraints.length; j++){
                 var each = this._constraints[j];
@@ -549,11 +548,13 @@ var FamousView = marionette.View.extend({
 
         var callback = function(){
             Engine.removeListener('postrender', tick);
+            Engine.removeListener('postrender', callback);
             deferred.resolve(this);
         }.bind(this);
 
         if(!duration){
-            this._render();
+            this.invalidateView();
+            Engine.on('postrender', callback);
         }else{
             Engine.on('postrender', tick);
         }
@@ -565,7 +566,8 @@ var FamousView = marionette.View.extend({
         index || (index = 0);
 
         var target;
-        var duration = transition && transition.duration ? transition.duration : null;
+        var duration = transition && transition.duration ? transition.duration : 0;
+
         var obj = this._prepareModification(duration);
 
         if(_.isArray(this._modifier)){
@@ -574,7 +576,84 @@ var FamousView = marionette.View.extend({
             target = this._modifier;
         }
 
-        target.setTransform(transform, transition, obj.callback);
+        if(!duration){
+            target.setTransform(transform);
+            this.invalidateView();
+        }else{
+            target.setTransform(transform, transition, obj.callback);
+        }
+
+        return obj.deferred;
+    },
+
+    setOpacity: function(opacity, transition, index){
+        index || (index = 0);
+
+        var target;
+        var duration = transition && transition.duration ? transition.duration : 0;
+
+        var obj = this._prepareModification(duration);
+
+        if(_.isArray(this._modifier)){
+            target = this._modifier[index];
+        } else {
+            target = this._modifier;
+        }
+
+        if(!duration){
+            target.setOpacity(opacity);
+            this.invalidateView();
+        }else{
+            target.setOpacity(opacity, transition, obj.callback);
+        }
+
+        return obj.deferred;
+    },
+
+    setOrigin: function(origin, transition, index){
+        index || (index = 0);
+
+        var target;
+        var duration = transition && transition.duration ? transition.duration : 0;
+
+        var obj = this._prepareModification(duration);
+
+        if(_.isArray(this._modifier)){
+            target = this._modifier[index];
+        } else {
+            target = this._modifier;
+        }
+
+        if(!duration){
+            target.setOrigin(origin);
+            this.invalidateView();
+        }else{
+            target.setOrigin(origin, transition, obj.callback);
+        }
+
+        return obj.deferred;
+    },
+
+    setAlign: function(align, transition, index){
+        index || (index = 0);
+
+        var target;
+        var duration = transition && transition.duration ? transition.duration : 0;
+
+        var obj = this._prepareModification(duration);
+
+        if(_.isArray(this._modifier)){
+            target = this._modifier[index];
+        } else {
+            target = this._modifier;
+        }
+
+        if(!duration){
+            target.setAlign(align);
+            this.invalidateView();
+        }else{
+            target.setAlign(align, transition, obj.callback);
+        }
 
         return obj.deferred;
     },
@@ -941,7 +1020,9 @@ var FamousView = marionette.View.extend({
     },
 
     invalidateLayout: function(){
-
+        // this is rather destructive and it's results are
+        // very expensive. We can most certainly can find a
+        // better way to handle this.
         this._constraintsInitialized = false;
         this._relationshipsInitialized = false;
         this._initializeAutolayoutDefaults();
