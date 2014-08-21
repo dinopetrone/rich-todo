@@ -25,12 +25,12 @@ var TodoLayout = rich.View.extend({
     initialize: function(){
         this.masterCollection = new Tasks();
         this.filteredCollection = new Tasks();
-        // _.each(_.range(35), function(i){
-        //     this.masterCollection.add({
-        //         title:'hi'+(i+1),
-        //         isActive: Math.random() > 0.5
-        //     });
-        // }, this);
+        _.each(_.range(35), function(i){
+            this.masterCollection.add({
+                title:'hi'+(i+1),
+                isActive: Math.random() > 0.5
+            });
+        }, this);
 
         this.filteredCollection.reset(this.masterCollection.models);
         this.initializeViews();
@@ -57,12 +57,10 @@ var TodoLayout = rich.View.extend({
         // console.log(scroll.ScrollView)
         var scrollview = this.scrollview = new scroll.ScrollView({
             contentSize: function(){
-                if(!this.filteredCollection.length){
+                if(listview.children.length == 0){
                     return [0, 0];
                 }
-
                 var size = listview.children.findByIndex(0).getSize();
-                console.log(size)
                 var height = this.filteredCollection.length * size[1];
                 return [0, height];
             }.bind(this),
