@@ -50,7 +50,6 @@ var ListCellView = rich.ItemView.extend({
     },
 
     wantsSwitchState: function() {
-        console.log(this.model.get('title'));
         this.model.toggleIsActive();
     },
 

@@ -8,14 +8,20 @@ var FooterView = rich.ItemView.extend({
     template : template,
     ui: {
         numberActive: '#active-count strong',
-        toggleAll: '#toggle-all',
         checkDone: '#check-done',
         clearCompleted: '#clear-completed'
     },
     events: {
         'click #clear-completed': 'wantsClearCompleted',
         'click .filter': 'wantsChangeFilter',
-        'click #toggle-all': 'wantsToggleAll'
+    },
+
+    initialize: function(options){
+        this.listenTo(options.collection, 'add remove', this.updateCount);
+    },
+
+    updateCount: function(){
+        this.ui.numberActive.html(this.collection.length);
     },
 
     wantsClearCompleted: function() {
@@ -36,28 +42,11 @@ var FooterView = rich.ItemView.extend({
     },
 
     changeFilter: function(status) {
-        console.log(status)
         backbone.history.navigate(status, {
             trigger:true
         });
     },
 
-    wantsToggleAll: function(event) {
-        this.toggleAll();
-    },
-
-    toggleAll: function() {
-        var toggled = this.ui.checkDone.hasClass('done');
-        this.masterCollection.forEach(function(model) {
-            model.set('isActive', toggled).save();
-        });
-        if (toggled) {
-            this.ui.checkDone.removeClass('done');
-        } else {
-            this.ui.checkDone.addClass('done');
-        }
-
-    },
 });
 
 exports.FooterView = FooterView;
