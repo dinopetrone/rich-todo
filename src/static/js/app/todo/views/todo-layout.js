@@ -33,6 +33,8 @@ var TodoLayout = rich.View.extend({
         }, this);
 
         this.filteredCollection.reset(this.masterCollection.models);
+        this.name = 'todolayout';
+
         this.initializeViews();
     },
 
@@ -48,6 +50,7 @@ var TodoLayout = rich.View.extend({
 
         // list view creation inside a scrollview
         var listview = this.listView = new ListCollectionView(options);
+        options.listView = listview;
 
         // var listview = this.listView = new LongView();
 
@@ -56,20 +59,23 @@ var TodoLayout = rich.View.extend({
 
         // console.log(scroll.ScrollView)
         var scrollview = this.scrollview = new scroll.ScrollView({
+
             contentSize: function(){
-                if(listview.children.length == 0){
+                if(listview.children.length === 0){
                     return [0, 0];
                 }
                 var size = listview.children.findByIndex(0).getSize();
-                var height = this.filteredCollection.length * size[1];
+                var height = this.filteredCollection.length * (size[1] + this.listView.spacing);
                 return [0, height];
             }.bind(this),
+
             direction: scroll.DIRECTION_Y,
             nestedSubviews: true,
             scrollDriver: BounceDriver
         });
 
-        this.listenTo(this.filteredCollection, 'add remove reset', function(){
+
+        this.listenTo(this.listView, 'change', function(){
             scrollview.update();
         });
 

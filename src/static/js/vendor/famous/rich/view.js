@@ -830,10 +830,11 @@ var FamousView = marionette.View.extend({
     },
 
     prepareSubviewRemove: function(view){
-        view.superview = null;
-        view.context = null;
-        view._isShown = false;
-        view.invalidateLayout();
+
+        window.requestAnimationFrame(function(){
+            view.invalidateLayout();
+            view._richDestroy();
+        });
 
         this.children.remove(view);
         this.stopListening(view, events.INVALIDATE, this.subviewDidChange);
@@ -1027,22 +1028,30 @@ var FamousView = marionette.View.extend({
         this._relationshipsInitialized = false;
         this._initializeAutolayoutDefaults();
 
-        if(this.children){
-            this.children.each(function(subview){
-                subview.invalidateLayout();
-            });
-        }
-
+        this.children.each(function(subview){
+            subview.invalidateLayout();
+        });
 
         if(this.root){
             this.root = null;
         }
-
     },
 
     invalidateView: function(){
         this._render();
         this.triggerRichInvalidate();
+    },
+
+    _richDestroy: function(){
+        this._solver = null;
+        this._isShown = false;
+        this._autolayout = {};
+        this._constraintsIndex = {};
+        this._constraintRelations = null;
+        this.superview = null;
+        this.context = null;
+        this.root = null;
+        this.children = null;
     },
 
 
@@ -1054,12 +1063,16 @@ var FamousView = marionette.View.extend({
         // Backbone.View.remove()
 
         // this.$el.remove();
-        this.children = null;
-        this.root = null;
+
         if(this.$el){
             this.undelegateEvents();
         }
+
         this.stopListening();
+
+        if(!this.isDestroyed)
+            this._richDestroy();
+
         return this;
     },
 

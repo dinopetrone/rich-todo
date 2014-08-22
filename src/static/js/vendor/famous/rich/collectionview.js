@@ -14,7 +14,9 @@ define(function (require, exports, module) {
 
     CollectionView = CollectionView.extend({
         orientation: 'vertical',
-        spacing: 8,
+        spacing: 0,
+        _lazyAdd: null,
+        _lazyRemove: null,
 
         constructor: function(options){
             options || (options = {});
@@ -23,6 +25,9 @@ define(function (require, exports, module) {
             _.extend(this, _.pick(options, collectionOptions));
 
             FamousView.prototype.constructor.apply(this, arguments);
+
+            this._lazyAdd = [];
+            this._lazyRemove = [];
 
             this._initialEvents();
             this.initRenderBuffer();
@@ -56,11 +61,25 @@ define(function (require, exports, module) {
             this.initRenderBuffer();
         },
 
+        _lazyRender: function(){
+            if(this._lazy) return;
+
+            this._lazy = true;
+
+            window.requestAnimationFrame(function(){
+
+                this._lazy = false;
+
+                if(this._lazyAdd.length || this._lazyRemove.length){
+                    this.render();
+                }
+
+            }.bind(this));
+        },
 
         // Configured the initial events that the collection view
         // binds to.
         _initialEvents: function() {
-
             // the only reason we are overriding this methods is to change
             // the behavior of the 'reset' handler.
             if (this.collection) {
@@ -75,25 +94,37 @@ define(function (require, exports, module) {
         },
 
         _famousReset: function(){
+            this.isResetting = true;
             this.destroyEmptyView();
             this.destroyChildren();
 
             this._constraints = [];
+            this.isResetting = false;
+
             this.invalidateLayout();
 
-            this.root = null;
             this.render();
-
             this.triggerRichInvalidate();
         },
 
-        render: function(){
-            if(!this.root || this.needsDisplay()){
+        _renderWorkflow: function(){
+            this._ensureViewIsIntact();
+            this.triggerMethod('before:render', this);
+            this._renderChildren();
+            this.triggerMethod('render', this);
+        },
 
-                this._ensureViewIsIntact();
-                this.triggerMethod('before:render', this);
-                this._renderChildren();
-                this.triggerMethod('render', this);
+        render: function(){
+            if(this._richDirty){
+                if(this._lazyAdd.length || this._lazyRemove.length){
+                    this.processChanges();
+                    this.trigger('change', this);
+                } else {
+                    this._renderWorkflow();
+                }
+            }
+            else if(!this.root || this.needsDisplay()){
+                this._renderWorkflow();
             }
 
             return this._spec;
@@ -167,12 +198,13 @@ define(function (require, exports, module) {
              * our subviews for our rendering needs
              */
 
-            if(this.sizeForEmptyView){
-                size = this.sizeForEmptyView(view);
-                view.properties.size = size;
-            }
+            // if(this.sizeForEmptyView){
+            //     size = this.sizeForEmptyView(view);
+            // }
 
-            this.addSubview(view);
+            this._richDirty = true;
+            this._lazyAdd.push(view);
+            this._lazyRender();
 
             // call the 'show' method if the collection view
             // has already been shown
@@ -203,30 +235,32 @@ define(function (require, exports, module) {
             // invalidate the view. addCOnstraints below will do that
             // job for us as well as invalidating the layout.
 
-            var constraints;
+            // var constraints;
 
-            if(this.orientation == 'vertical'){
-                constraints = this.applyVerticalConstraints(view, index);
-            } else {
-                constraints = this.applyHorizontalConstraints(view, index);
-            }
+            // if(this.orientation == 'vertical'){
+            //     constraints = this.applyVerticalConstraints(view, index);
+            // } else {
+            //     constraints = this.applyHorizontalConstraints(view, index);
+            // }
 
-            this.prepareSubviewAdd(view);
+            this._richDirty = true;
+            this._lazyAdd.push(view);
+            this._lazyRender();
 
-            if(this.isBuffering){
-                this._constraintBuffer = this._constraintBuffer.concat(constraints);
-            } else {
-                view._initializeRelationships();
-                this.addConstraints(constraints);
-            }
+            // if(this.isBuffering){
+            //     this._constraintBuffer = this._constraintBuffer.concat(constraints);
+            // } else {
+            //     view._initializeRelationships();
+            //     this.addConstraints(constraints);
+            // }
 
-            if (true || this._isShown && !this.isBuffering){
-                if (_.isFunction(view.triggerMethod)) {
-                    view.triggerMethod('show');
-                } else {
-                    Marionette.triggerMethod.call(view, 'show');
-                }
-            }
+            // if (true || this._isShown && !this.isBuffering){
+            //     if (_.isFunction(view.triggerMethod)) {
+            //         view.triggerMethod('show');
+            //     } else {
+            //         Marionette.triggerMethod.call(view, 'show');
+            //     }
+            // }
 
             this.triggerMethod('add:child', view);
         },
@@ -319,6 +353,10 @@ define(function (require, exports, module) {
             return view.getSize();
         },
 
+        sizeForEmptyView: function(){
+
+        },
+
         // Remove the child view and destroy it.
         // This function also updates the indices of
         // later views in the collection in order to keep
@@ -333,31 +371,59 @@ define(function (require, exports, module) {
 
                 this.stopListening(view);
 
-                this.prepareSubviewRemove(view);
+                this._richDirty = true;
+
+                if(this.isResetting)
+                    this.prepareSubviewRemove(view);
+                else
+                    this._lazyRemove.push(view);
+
                 this.triggerMethod('remove:child', view);
 
                 // decrement the index of views after this one
                 this._updateIndices(view, false);
 
-                var constraints = this._processIntrinsicConstraints(
-                    _.result(this, 'constraints')
-                );
-
-                var action = this.orientation == 'vertical' ?
-                    this.applyVerticalConstraints.bind(this) :
-                    this.applyHorizntalConstraints.bind(this);
-
-                this.children.each(function(view, index){
-                    constraints = constraints.concat(action(view, index));
-                }, this);
-
-                this._constraints = constraints;
-                this.invalidateLayout();
-                this.invalidateView();
+                if(!this.isResetting)
+                    this._lazyRender();
             }
 
             return view;
         },
+
+        processChanges: function(){
+            var adds = this._lazyAdd;
+            var removes = this._lazyRemove;
+            var i;
+
+            for(i = 0; i < adds.length; i++){
+                this.prepareSubviewAdd(adds[i]);
+            }
+
+            for(i = 0; i < removes.length; i++){
+                this.prepareSubviewRemove(removes[i]);
+            }
+
+            this._lazyAdd = [];
+            this._lazyRemove = [];
+
+            var constraints = this._processIntrinsicConstraints(
+                _.result(this, 'constraints')
+            );
+
+            var action = this.orientation == 'vertical' ?
+                this.applyVerticalConstraints.bind(this) :
+                this.applyHorizntalConstraints.bind(this);
+
+            this.children.each(function(view, index){
+                constraints = constraints.concat(action(view, index));
+            }, this);
+
+            this._constraints = constraints;
+            this.invalidateLayout();
+            this.invalidateView();
+
+            this._richDirty = false;
+        }
     });
 
     exports.CollectionView = CollectionView;
