@@ -71,10 +71,11 @@ var TodoLayout = rich.View.extend({
             scrollDriver: BounceDriver
         });
 
+        this.listenTo(listview, 'change', scrollview.update.bind(scrollview))
 
-        this.listenTo(this.listView, 'change', function() {
-            scrollview.update();
-        });
+        // this.listenTo(this.listView, 'change', function() {
+        //     scrollview.update();
+        // });
 
         scrollview.addSubview(this.listView);
 
