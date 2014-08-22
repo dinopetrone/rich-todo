@@ -26,12 +26,12 @@ var TodoLayout = rich.View.extend({
         this.masterCollection = new Tasks();
         this.filteredCollection = new Tasks();
 
-        // _.each(_.range(35), function(i) {
-        //     this.masterCollection.add({
-        //         title: 'hi' + (i + 1),
-        //         isActive: Math.random() > 0.5
-        //     });
-        // }, this);
+        _.each(_.range(10), function(i) {
+            this.masterCollection.add({
+                title: 'hi' + (i + 1),
+                isActive: Math.random() > 0.5
+            });
+        }, this);
 
         this.filteredCollection.reset(this.masterCollection.models);
         this.name = 'todolayout';
