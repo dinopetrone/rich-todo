@@ -23,13 +23,11 @@ var CONSTRAINT_PROPS = ['width', 'height', 'top', 'left'];
 
 var FamousView = marionette.View.extend({
 
-    //size: null,
     nestedSubviews: false,
     template: false,
     modifier: null,
     zIndex: 1,
     superview: null,
-    subviews: null,
     root: null,
     context: null,
     _isRoot: false,
@@ -457,7 +455,6 @@ var FamousView = marionette.View.extend({
             this.invalidateLayout();
             this.invalidateView();
         }
-
     },
 
     removeConstraints: function(constraints){
@@ -805,6 +802,7 @@ var FamousView = marionette.View.extend({
 
     prepareSubviewAdd: function(view, zIndex){
         view.superview = this;
+        this._richDestroyed = false;
 
         function setZIndex(value){
             view.zIndex = value;
@@ -830,14 +828,13 @@ var FamousView = marionette.View.extend({
     },
 
     prepareSubviewRemove: function(view){
+        this.children.remove(view);
+        this.stopListening(view, events.INVALIDATE, this.subviewDidChange);
 
-        window.requestAnimationFrame(function(){
+        utils.defer(function(){
             view.invalidateLayout();
             view._richDestroy();
         });
-
-        this.children.remove(view);
-        this.stopListening(view, events.INVALIDATE, this.subviewDidChange);
     },
 
     removeSubview: function(view){
@@ -893,7 +890,6 @@ var FamousView = marionette.View.extend({
             }
         }
 
-
         var famousId = view.getFamousId();
 
         // this is a view without a renderable
@@ -925,7 +921,7 @@ var FamousView = marionette.View.extend({
                 id = obj[0];
             } else if(_.isObject(obj)){
                 // these aren't the droids your looking for
-                break;
+                continue;
             }else{
                 debugger;
                 throw new Error('An unexpected error occured '+
@@ -1028,13 +1024,16 @@ var FamousView = marionette.View.extend({
         this._relationshipsInitialized = false;
         this._initializeAutolayoutDefaults();
 
-        this.children.each(function(subview){
-            subview.invalidateLayout();
-        });
+        if(!this.isDestroyed){
+            this.children.each(function(subview){
+                subview.invalidateLayout();
+            });
+        }
 
         if(this.root){
             this.root = null;
         }
+
     },
 
     invalidateView: function(){
@@ -1052,8 +1051,8 @@ var FamousView = marionette.View.extend({
         this.context = null;
         this.root = null;
         this.children = null;
+        this._richDestroyed = true;
     },
-
 
     // override Backbone.View.remove()
     remove: function(){
@@ -1067,10 +1066,9 @@ var FamousView = marionette.View.extend({
         if(this.$el){
             this.undelegateEvents();
         }
-
         this.stopListening();
 
-        if(!this.isDestroyed)
+        if(!this._richDestroyed)
             this._richDestroy();
 
         return this;

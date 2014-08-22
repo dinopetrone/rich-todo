@@ -30,35 +30,6 @@ define(function (require, exports, module) {
             this._lazyRemove = [];
 
             this._initialEvents();
-            this.initRenderBuffer();
-        },
-
-        // Instead of inserting elements one by one into the page,
-        // it's much more performant to insert elements into a document
-        // fragment and then insert that document fragment into the page
-        initRenderBuffer: function() {
-          //this.elBuffer = document.createDocumentFragment();
-          //this._bufferedChildren = [];
-          this._constraintBuffer = [];
-        },
-
-        startBuffering: function() {
-            this.initRenderBuffer();
-            this.isBuffering = true;
-
-            var constraints = _.result(this, 'constraints');
-            this._constraintBuffer = this._constraintBuffer.concat(
-                this._processIntrinsicConstraints(constraints)
-            );
-        },
-
-        endBuffering: function() {
-            this.isBuffering = false;
-            this._constraints = this._constraintBuffer;
-
-            //this._triggerBeforeShowBufferedChildren();
-            //this._triggerShowBufferedChildren();
-            this.initRenderBuffer();
         },
 
         _lazyRender: function(){
@@ -66,7 +37,7 @@ define(function (require, exports, module) {
 
             this._lazy = true;
 
-            window.requestAnimationFrame(function(){
+            utils.defer(function(){
 
                 this._lazy = false;
 
@@ -80,7 +51,7 @@ define(function (require, exports, module) {
         // Configured the initial events that the collection view
         // binds to.
         _initialEvents: function() {
-            // the only reason we are overriding this methods is to change
+            // the only reason we (rich) are overriding this method is to change
             // the behavior of the 'reset' handler.
             if (this.collection) {
                 this.listenTo(this.collection, 'add', this._onCollectionAdd);
@@ -148,23 +119,11 @@ define(function (require, exports, module) {
                 this.showEmptyView();
             } else {
                 this.triggerMethod('before:render:collection', this);
-                this.startBuffering();
                 this.showCollection();
-                this.endBuffering();
                 this.triggerMethod('render:collection', this);
             }
 
             this._render();
-        },
-
-        // Internal method to destroy an existing emptyView instance
-        // if one exists. Called when a collection view has been
-        // rendered empty, and then a child is added to the collection.
-        destroyEmptyView: function() {
-            if (this._showingEmptyView) {
-                this.destroyChildren();
-                delete this._showingEmptyView;
-            }
         },
 
         // Render and show the emptyView. Similar to addChild method
@@ -189,19 +148,6 @@ define(function (require, exports, module) {
                 this.triggerMethod.call(view, 'before:show');
             }
 
-            // Store the `emptyView` like a `childView` so we can properly
-            // remove and/or close it later
-
-            /**
-             * RICH CHANGE: from this.children.add(view) to this.addSubview(view)
-             * Effecitively does the same thing, but we need to register
-             * our subviews for our rendering needs
-             */
-
-            // if(this.sizeForEmptyView){
-            //     size = this.sizeForEmptyView(view);
-            // }
-
             this._richDirty = true;
             this._lazyAdd.push(view);
             this._lazyRender();
@@ -225,42 +171,9 @@ define(function (require, exports, module) {
             // Store the child view itself so we can properly
             // remove and/or destroy it later
 
-            /**
-             * RICH CHANGE: from this.children.add(view) to this.addSubview(view)
-             * Effecitively does the same thing, but we need to register
-             * our subviews for our rendering needs
-             */
-
-            // we don't want addSubview here, that will immediately
-            // invalidate the view. addCOnstraints below will do that
-            // job for us as well as invalidating the layout.
-
-            // var constraints;
-
-            // if(this.orientation == 'vertical'){
-            //     constraints = this.applyVerticalConstraints(view, index);
-            // } else {
-            //     constraints = this.applyHorizontalConstraints(view, index);
-            // }
-
             this._richDirty = true;
             this._lazyAdd.push(view);
             this._lazyRender();
-
-            // if(this.isBuffering){
-            //     this._constraintBuffer = this._constraintBuffer.concat(constraints);
-            // } else {
-            //     view._initializeRelationships();
-            //     this.addConstraints(constraints);
-            // }
-
-            // if (true || this._isShown && !this.isBuffering){
-            //     if (_.isFunction(view.triggerMethod)) {
-            //         view.triggerMethod('show');
-            //     } else {
-            //         Marionette.triggerMethod.call(view, 'show');
-            //     }
-            // }
 
             this.triggerMethod('add:child', view);
         },
@@ -351,10 +264,6 @@ define(function (require, exports, module) {
 
         sizeForViewAtIndex: function(view, index){
             return view.getSize();
-        },
-
-        sizeForEmptyView: function(){
-
         },
 
         // Remove the child view and destroy it.
