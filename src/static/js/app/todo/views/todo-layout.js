@@ -73,9 +73,6 @@ var TodoLayout = rich.View.extend({
 
         this.listenTo(listview, 'change', scrollview.update.bind(scrollview))
 
-        // this.listenTo(this.listView, 'change', function() {
-        //     scrollview.update();
-        // });
 
         scrollview.addSubview(this.listView);
 
