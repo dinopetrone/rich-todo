@@ -20,6 +20,10 @@ var FooterView = rich.ItemView.extend({
         this.listenTo(options.collection, 'add remove', this.updateCount);
     },
 
+    onShow: function(){
+        this.updateCount();
+    },
+
     updateCount: function(){
         this.ui.numberActive.html(this.collection.length);
     },
