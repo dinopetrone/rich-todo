@@ -2,6 +2,7 @@ define(function (require, exports, module) {
 
 var _ = require('underscore');
 var $ = require('jquery');
+var utils = require('rich/utils');
 var marionette = require('marionette');
 var backbone = require('backbone');
 var RenderNode = require('famous/core/RenderNode');
@@ -22,13 +23,11 @@ var CONSTRAINT_PROPS = ['width', 'height', 'top', 'left'];
 
 var FamousView = marionette.View.extend({
 
-    //size: null,
     nestedSubviews: false,
     template: false,
     modifier: null,
     zIndex: 1,
     superview: null,
-    subviews: null,
     root: null,
     context: null,
     _isRoot: false,
@@ -163,8 +162,6 @@ var FamousView = marionette.View.extend({
         w = w || 0;
         h = h || 0;
 
-
-
         if(this.properties.size){
             w = this.properties.size[0] || 0;
             h = this.properties.size[1] || 0;
@@ -252,6 +249,24 @@ var FamousView = marionette.View.extend({
         );
     },
 
+    _processIntrinsicConstraints: function(constraints){
+        var tmp = [];
+
+        if(!constraints) return tmp;
+
+        for(var i = 0; i < constraints.length; i++){
+            var each = constraints[i];
+
+            if(_.isString(each)){
+                tmp = tmp.concat(constraintsWithVFL(each));
+            } else {
+                tmp.push(constraintWithJSON(each));
+            }
+        }
+
+        return tmp;
+    },
+
     _initializeConstraints: function(){
         var constraints = _.result(this, 'constraints');
         var wantsInitialize;
@@ -267,19 +282,7 @@ var FamousView = marionette.View.extend({
         }
 
         if(constraints){
-            var tmp = [];
-
-            for(var i = 0; i < constraints.length; i++){
-                var each = constraints[i];
-
-                if(_.isString(each)){
-                    tmp = tmp.concat(constraintsWithVFL(each));
-                } else {
-                    tmp.push(constraintWithJSON(each));
-                }
-            }
-
-            constraints = tmp;
+            constraints = this._processIntrinsicConstraints(constraints);
             key = hashConstraints(constraints, this);
             shouldClearConstraints = key != this._currentConstraintKey;
         }
@@ -452,7 +455,6 @@ var FamousView = marionette.View.extend({
             this.invalidateLayout();
             this.invalidateView();
         }
-
     },
 
     removeConstraints: function(constraints){
@@ -479,8 +481,7 @@ var FamousView = marionette.View.extend({
 
             // bookkeeping - very costly bookkeeping
             // not happy with this at all, need to look into
-            // building a tree out of that data maybe to make these
-            // easier to remove without this overhead.
+            // ways to handle this withough all this overhead.
             delete this._constraintsIndex[constraint.cid];
             for(var j = index; j < this._constraints.length; j++){
                 var each = this._constraints[j];
@@ -544,11 +545,13 @@ var FamousView = marionette.View.extend({
 
         var callback = function(){
             Engine.removeListener('postrender', tick);
+            Engine.removeListener('postrender', callback);
             deferred.resolve(this);
         }.bind(this);
 
         if(!duration){
-            this._render();
+            this.invalidateView();
+            Engine.on('postrender', callback);
         }else{
             Engine.on('postrender', tick);
         }
@@ -560,7 +563,8 @@ var FamousView = marionette.View.extend({
         index || (index = 0);
 
         var target;
-        var duration = transition && transition.duration ? transition.duration : null;
+        var duration = transition && transition.duration ? transition.duration : 0;
+
         var obj = this._prepareModification(duration);
 
         if(_.isArray(this._modifier)){
@@ -569,7 +573,84 @@ var FamousView = marionette.View.extend({
             target = this._modifier;
         }
 
-        target.setTransform(transform, transition, obj.callback);
+        if(!duration){
+            target.setTransform(transform);
+            this.invalidateView();
+        }else{
+            target.setTransform(transform, transition, obj.callback);
+        }
+
+        return obj.deferred;
+    },
+
+    setOpacity: function(opacity, transition, index){
+        index || (index = 0);
+
+        var target;
+        var duration = transition && transition.duration ? transition.duration : 0;
+
+        var obj = this._prepareModification(duration);
+
+        if(_.isArray(this._modifier)){
+            target = this._modifier[index];
+        } else {
+            target = this._modifier;
+        }
+
+        if(!duration){
+            target.setOpacity(opacity);
+            this.invalidateView();
+        }else{
+            target.setOpacity(opacity, transition, obj.callback);
+        }
+
+        return obj.deferred;
+    },
+
+    setOrigin: function(origin, transition, index){
+        index || (index = 0);
+
+        var target;
+        var duration = transition && transition.duration ? transition.duration : 0;
+
+        var obj = this._prepareModification(duration);
+
+        if(_.isArray(this._modifier)){
+            target = this._modifier[index];
+        } else {
+            target = this._modifier;
+        }
+
+        if(!duration){
+            target.setOrigin(origin);
+            this.invalidateView();
+        }else{
+            target.setOrigin(origin, transition, obj.callback);
+        }
+
+        return obj.deferred;
+    },
+
+    setAlign: function(align, transition, index){
+        index || (index = 0);
+
+        var target;
+        var duration = transition && transition.duration ? transition.duration : 0;
+
+        var obj = this._prepareModification(duration);
+
+        if(_.isArray(this._modifier)){
+            target = this._modifier[index];
+        } else {
+            target = this._modifier;
+        }
+
+        if(!duration){
+            target.setAlign(align);
+            this.invalidateView();
+        }else{
+            target.setAlign(align, transition, obj.callback);
+        }
 
         return obj.deferred;
     },
@@ -602,6 +683,13 @@ var FamousView = marionette.View.extend({
         spec = this.root.render();
         this._spec = spec;
         this.triggerRichRender();
+
+        if(!this._isShown){
+            this._isShown = true;
+            utils.postrenderOnce(function(){
+                this.triggerMethod('show');
+            }.bind(this));
+        }
     },
 
     triggerRichRender: function(){
@@ -687,6 +775,7 @@ var FamousView = marionette.View.extend({
         }
 
         if(!this.renderable && this.getTemplate()){
+
             this.renderable = this.initializeRenderable();
         }
 
@@ -703,6 +792,7 @@ var FamousView = marionette.View.extend({
 
             if(needsTrigger){
                 view.triggerMethod('context');
+
             }
             relative.add(view);
         }, this);
@@ -712,6 +802,7 @@ var FamousView = marionette.View.extend({
 
     prepareSubviewAdd: function(view, zIndex){
         view.superview = this;
+        this._richDestroyed = false;
 
         function setZIndex(value){
             view.zIndex = value;
@@ -737,12 +828,13 @@ var FamousView = marionette.View.extend({
     },
 
     prepareSubviewRemove: function(view){
-        view.superview = null;
-        view.context = null;
-        view.invalidateLayout();
-
         this.children.remove(view);
         this.stopListening(view, events.INVALIDATE, this.subviewDidChange);
+
+        utils.defer(function(){
+            view.invalidateLayout();
+            view._richDestroy();
+        });
     },
 
     removeSubview: function(view){
@@ -798,7 +890,6 @@ var FamousView = marionette.View.extend({
             }
         }
 
-
         var famousId = view.getFamousId();
 
         // this is a view without a renderable
@@ -830,7 +921,7 @@ var FamousView = marionette.View.extend({
                 id = obj[0];
             } else if(_.isObject(obj)){
                 // these aren't the droids your looking for
-                break;
+                continue;
             }else{
                 debugger;
                 throw new Error('An unexpected error occured '+
@@ -926,17 +1017,18 @@ var FamousView = marionette.View.extend({
     },
 
     invalidateLayout: function(){
-
+        // this is rather destructive and it's results are
+        // very expensive. We can most certainly can find a
+        // better way to handle this.
         this._constraintsInitialized = false;
         this._relationshipsInitialized = false;
         this._initializeAutolayoutDefaults();
 
-        if(this.children){
+        if(!this.isDestroyed){
             this.children.each(function(subview){
                 subview.invalidateLayout();
             });
         }
-
 
         if(this.root){
             this.root = null;
@@ -949,6 +1041,18 @@ var FamousView = marionette.View.extend({
         this.triggerRichInvalidate();
     },
 
+    _richDestroy: function(){
+        this._solver = null;
+        this._isShown = false;
+        this._autolayout = {};
+        this._constraintsIndex = {};
+        this._constraintRelations = null;
+        this.superview = null;
+        this.context = null;
+        this.root = null;
+        this.children = null;
+        this._richDestroyed = true;
+    },
 
     // override Backbone.View.remove()
     remove: function(){
@@ -958,12 +1062,15 @@ var FamousView = marionette.View.extend({
         // Backbone.View.remove()
 
         // this.$el.remove();
-        this.children = null;
-        this.root = null;
+
         if(this.$el){
             this.undelegateEvents();
         }
         this.stopListening();
+
+        if(!this._richDestroyed)
+            this._richDestroy();
+
         return this;
     },
 

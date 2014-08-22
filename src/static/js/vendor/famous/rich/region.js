@@ -61,26 +61,21 @@ Region = Region.extend({
                 this.open(view);
             }
 
-            // very rich specific
-            utils.postrenderOnce(function(){
-                this.triggerMethod('show', view);
-
-                if (_.isFunction(view.triggerMethod)) {
-                    view.triggerMethod('show');
-                } else {
-                    this.triggerMethod.call(view, 'show');
-                }
-            }.bind(this));
-
         }
         return this;
     },
 
     open: function(view){
+
+        // view.invalidateLayout();
         this.prepareSubviewAdd(view);
 
-        if(this.root){
-            this.invalidateLayout();
+        this.invalidateLayout();
+        // this that have nestedSubviews
+        // will break if we don't ensure a context is present
+        // also, if no context is present, we have yet to be
+        // rendered anyway.
+        if(this.context){
             this.invalidateView();
         }
     },

@@ -3,9 +3,9 @@
 }
 
 .list-cell {
-    -webkit-box-shadow: 10px 10px 16px 0px rgba(0,0,0,0.33);
-    -moz-box-shadow: 10px 10px 16px 0px rgba(0,0,0,0.33);
-    box-shadow: 10px 10px 16px 0px rgba(0,0,0,0.33);
+    // -webkit-box-shadow: 10px 10px 16px 0px rgba(0,0,0,0.33);
+    // -moz-box-shadow: 10px 10px 16px 0px rgba(0,0,0,0.33);
+    // box-shadow: 10px 10px 16px 0px rgba(0,0,0,0.33);
     // border-left: 1px solid #fff;
     // border-top: 1px solid #fff;
 }
@@ -48,10 +48,9 @@
     }
 }
 
-.count {
-    position: relative;
-    top: -8px;
-    left: -4px;
+
+footer .black.ui.label.count {
+    margin-bottom: 10px;
 }
 
 /* SQUARED TWO */

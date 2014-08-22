@@ -1,4 +1,4 @@
-define(function (require, exports, module) {
+define(function(require, exports, module) {
 
 var rich = require('rich');
 var Modifier = require('famous/core/Modifier');
@@ -14,7 +14,7 @@ var constraints = require('app/todo/constraints/todo-layout');
 
 var TodoLayout = rich.View.extend({
 
-    constraints: function(){
+    constraints: function() {
         if (window.outerWidth > 1028) {
             return constraints.large;
         } else {
@@ -22,25 +22,28 @@ var TodoLayout = rich.View.extend({
         }
     },
 
-    initialize: function(){
+    initialize: function() {
         this.masterCollection = new Tasks();
         this.filteredCollection = new Tasks();
-        _.each(_.range(35), function(i){
+
+        _.each(_.range(10), function(i) {
             this.masterCollection.add({
-                title:'hi'+(i+1),
+                title: 'hi' + (i + 1),
                 isActive: Math.random() > 0.5
             });
         }, this);
 
         this.filteredCollection.reset(this.masterCollection.models);
+        this.name = 'todolayout';
+
         this.initializeViews();
     },
 
-    shouldInitializeRenderable: function(){
+    shouldInitializeRenderable: function() {
         return false;
     },
 
-    initializeViews : function(){
+    initializeViews: function() {
         var options = {
             collection: this.filteredCollection,
             masterCollection: this.masterCollection
@@ -48,32 +51,28 @@ var TodoLayout = rich.View.extend({
 
         // list view creation inside a scrollview
         var listview = this.listView = new ListCollectionView(options);
+        options.listView = listview;
 
-        // var listview = this.listView = new LongView();
-
-
-
-
-        // console.log(scroll.ScrollView)
         var scrollview = this.scrollview = new scroll.ScrollView({
-            contentSize: function(){
-                var size = listview.getSize();
-                // return [800, size[1]];
-                return [800, 2000];
-            },
+
+            contentSize: function() {
+                if (listview.children.length === 0) {
+                    return [0, 0];
+                }
+
+                var size = listview.children.findByIndex(0).getSize();
+                var height = this.filteredCollection.length * (size[1] + this.listView.spacing);
+
+                return [0, height];
+            }.bind(this),
+
             direction: scroll.DIRECTION_Y,
             nestedSubviews: true,
             scrollDriver: BounceDriver
         });
 
-        // var scrollview = this.scrollview = new rich.View({
-        //     nestedSubviews: true
-        // });
+        this.listenTo(listview, 'change', scrollview.update.bind(scrollview));
 
-
-        // this.listenTo(this.filteredCollection, 'add remove reset', function(){
-        //     scrollview.update();
-        // });
 
         scrollview.addSubview(this.listView);
 
@@ -86,15 +85,15 @@ var TodoLayout = rich.View.extend({
         this.addSubview(this.footerView);
     },
 
-    showActive: function(){
+    showActive: function() {
         this.filteredCollection.reset(this.masterCollection.activeTasks());
     },
 
-    showCompleted: function(){
+    showCompleted: function() {
         this.filteredCollection.reset(this.masterCollection.completedTasks());
     },
 
-    showAll: function(){
+    showAll: function() {
         this.filteredCollection.reset(this.masterCollection.models);
     },
 });

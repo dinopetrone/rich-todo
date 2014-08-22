@@ -21328,13 +21328,6 @@ ol.ui.horizontal.list li:before,
   width: 100%;
 }
 
-/* line 5, ../scss/page/_todo.scss */
-.list-cell {
-  -webkit-box-shadow: 10px 10px 16px 0px rgba(0, 0, 0, 0.33);
-  -moz-box-shadow: 10px 10px 16px 0px rgba(0, 0, 0, 0.33);
-  box-shadow: 10px 10px 16px 0px rgba(0, 0, 0, 0.33);
-}
-
 /* line 12, ../scss/page/_todo.scss */
 .todo-header {
   font-family: 'Poiret One', Arial, Helvetica, sans-serif;
@@ -21379,15 +21372,13 @@ ol.ui.horizontal.list li:before,
   top: 45% !important;
 }
 
-/* line 51, ../scss/page/_todo.scss */
-.count {
-  position: relative;
-  top: -8px;
-  left: -4px;
+/* line 52, ../scss/page/_todo.scss */
+footer .black.ui.label.count {
+  margin-bottom: 10px;
 }
 
 /* SQUARED TWO */
-/* line 58, ../scss/page/_todo.scss */
+/* line 57, ../scss/page/_todo.scss */
 .squaredTwo {
   width: 28px;
   height: 28px;
@@ -21406,7 +21397,7 @@ ol.ui.horizontal.list li:before,
   position: relative;
 }
 
-/* line 77, ../scss/page/_todo.scss */
+/* line 76, ../scss/page/_todo.scss */
 .squaredTwo label {
   cursor: pointer;
   position: absolute;
@@ -21425,7 +21416,7 @@ ol.ui.horizontal.list li:before,
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#222', endColorstr='#45484d',GradientType=0 );
 }
 
-/* line 97, ../scss/page/_todo.scss */
+/* line 96, ../scss/page/_todo.scss */
 .squaredTwo label:after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
   filter: alpha(opacity=0);
@@ -21447,14 +21438,14 @@ ol.ui.horizontal.list li:before,
   transform: rotate(-45deg);
 }
 
-/* line 119, ../scss/page/_todo.scss */
+/* line 118, ../scss/page/_todo.scss */
 .squaredTwo label:hover::after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
   filter: alpha(opacity=30);
   opacity: 0.3;
 }
 
-/* line 125, ../scss/page/_todo.scss */
+/* line 124, ../scss/page/_todo.scss */
 .squaredTwo input[type=checkbox]:checked + label:after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
   filter: alpha(opacity=100);
@@ -21463,7 +21454,7 @@ ol.ui.horizontal.list li:before,
 
 /* Smartphones (portrait) ----------- */
 @media only screen and (max-width: 640px) {
-  /* line 135, ../scss/page/_todo.scss */
+  /* line 134, ../scss/page/_todo.scss */
   .footer-btn {
     font-size: .5em !important;
     padding-top: 2em !important;
