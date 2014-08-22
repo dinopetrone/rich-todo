@@ -16,11 +16,8 @@ var FooterView = rich.ItemView.extend({
         'click .filter': 'wantsChangeFilter',
     },
 
-    initialize: function(options){
-        this.listenTo(options.collection, 'add remove reset', this.updateCount);
-    },
-
     onShow: function(){
+        this.listenTo(this.collection, 'add remove reset', this.updateCount);
         this.updateCount();
     },
 
