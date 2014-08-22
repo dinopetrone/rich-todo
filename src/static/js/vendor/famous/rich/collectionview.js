@@ -266,6 +266,7 @@ define(function (require, exports, module) {
             return view.getSize();
         },
 
+
         // Remove the child view and destroy it.
         // This function also updates the indices of
         // later views in the collection in order to keep
