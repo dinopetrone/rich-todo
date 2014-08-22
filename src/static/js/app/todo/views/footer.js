@@ -17,7 +17,7 @@ var FooterView = rich.ItemView.extend({
     },
 
     initialize: function(options){
-        this.listenTo(options.collection, 'add remove', this.updateCount);
+        this.listenTo(options.collection, 'add remove reset', this.updateCount);
     },
 
     onShow: function(){
