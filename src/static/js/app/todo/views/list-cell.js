@@ -2,6 +2,8 @@ define(function (require, exports, module) {
 
 var rich = require('rich');
 var template = require('hbs!../templates/list-cell');
+var Modifier = require('famous/core/Modifier');
+var Transform = require('famous/core/Transform');
 
 var ListCellView = rich.ItemView.extend({
     autolayoutTransition: {
@@ -22,6 +24,12 @@ var ListCellView = rich.ItemView.extend({
         'dblclick @ui.title': 'wantsEdit',
         'keypress @ui.input': 'wantsSubmit',
         'click @ui.checkbox': 'wantsSwitchState'
+    },
+
+    modifier: function(){
+        var mod = new Modifier();
+        this.modifier = mod;
+        return mod;
     },
 
     initialize: function(options) {
@@ -62,7 +70,11 @@ var ListCellView = rich.ItemView.extend({
     },
 
     wantsRemove: function() {
-        this.model.destroy();
+        this.setTransform(Transform.translate(1000, 0, 0),{
+            duration:200
+        }).then(function(){
+            this.model.destroy();
+        }.bind(this))
     },
 });
 

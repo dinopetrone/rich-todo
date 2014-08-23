@@ -33,6 +33,7 @@ var TodoLayout = rich.View.extend({
             });
         }, this);
 
+
         this.filteredCollection.reset(this.masterCollection.models);
         this.name = 'todolayout';
 
