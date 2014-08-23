@@ -4,6 +4,9 @@ var rich = require('rich');
 var template = require('hbs!../templates/list-cell');
 
 var ListCellView = rich.ItemView.extend({
+    autolayoutTransition: {
+        duration: 200
+    },
     className: 'list-cell',
     template : template,
     ui: {
