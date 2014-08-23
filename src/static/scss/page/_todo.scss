@@ -1,5 +1,32 @@
-.task-input {
-    width: 100%;
+header {
+    overflow: hidden;
+
+    .ui.input {
+        width: 75%;
+        float: right;
+
+        #new-task {
+            width: 100%;
+        }
+    }
+}
+
+.squaredTwo.select-all {
+    // position: absolute;
+    // top: 64px;
+    // left: 0;
+    // z-index: 5;
+    margin-top: 12px;
+    display: block;
+    float: left;
+
+    &:before {
+        content: 'Select All';
+        display: block;
+        position: relative;
+        top: -5px;
+        left: 36px;
+    }
 }
 
 .list-cell {
@@ -15,8 +42,7 @@
 }
 
 .checkbox {
-    position: relative;
-    left: -20px;
+    visibility: hidden;
 }
 
 .title {

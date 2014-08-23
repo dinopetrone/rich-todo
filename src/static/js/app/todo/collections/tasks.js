@@ -20,7 +20,13 @@ var Tasks =  backbone.Collection.extend({
     },
     numOfCompletedTasks: function() {
         return this.completedTasks().length;
-    }
+    },
+
+    setSelected: function(val){
+        this.each(function(item){
+            item.set('isActive', !val);
+        });
+    },
 });
 
 exports.Tasks = Tasks;

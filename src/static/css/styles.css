@@ -21324,23 +21324,46 @@ ol.ui.horizontal.list li:before,
 }
 
 /* line 1, ../scss/page/_todo.scss */
-.task-input {
+header {
+  overflow: hidden;
+}
+/* line 4, ../scss/page/_todo.scss */
+header .ui.input {
+  width: 75%;
+  float: right;
+}
+/* line 8, ../scss/page/_todo.scss */
+header .ui.input #new-task {
   width: 100%;
 }
 
-/* line 12, ../scss/page/_todo.scss */
+/* line 14, ../scss/page/_todo.scss */
+.squaredTwo.select-all {
+  margin-top: 12px;
+  display: block;
+  float: left;
+}
+/* line 23, ../scss/page/_todo.scss */
+.squaredTwo.select-all:before {
+  content: 'Select All';
+  display: block;
+  position: relative;
+  top: -5px;
+  left: 36px;
+}
+
+/* line 39, ../scss/page/_todo.scss */
 .todo-header {
   font-family: 'Poiret One', Arial, Helvetica, sans-serif;
   text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.7);
 }
 
-/* line 17, ../scss/page/_todo.scss */
+/* line 44, ../scss/page/_todo.scss */
 .checkbox {
-  position: relative;
-  left: -20px;
+  visibility: hidden;
 }
 
-/* line 22, ../scss/page/_todo.scss */
+/* line 48, ../scss/page/_todo.scss */
 .title {
   display: inline-block;
   max-width: 70%;
@@ -21350,35 +21373,35 @@ ol.ui.horizontal.list li:before,
   line-height: 1;
 }
 
-/* line 31, ../scss/page/_todo.scss */
+/* line 57, ../scss/page/_todo.scss */
 .editor-input {
   width: 60% !important;
   position: relative;
   left: -40px;
 }
 
-/* line 37, ../scss/page/_todo.scss */
+/* line 63, ../scss/page/_todo.scss */
 .animated {
   position: absolute !important;
   right: 12px !important;
   top: 3px !important;
 }
-/* line 42, ../scss/page/_todo.scss */
+/* line 68, ../scss/page/_todo.scss */
 .animated.green {
   right: 137px !important;
 }
-/* line 46, ../scss/page/_todo.scss */
+/* line 72, ../scss/page/_todo.scss */
 .animated .correct-center {
   top: 45% !important;
 }
 
-/* line 52, ../scss/page/_todo.scss */
+/* line 78, ../scss/page/_todo.scss */
 footer .black.ui.label.count {
   margin-bottom: 10px;
 }
 
 /* SQUARED TWO */
-/* line 57, ../scss/page/_todo.scss */
+/* line 83, ../scss/page/_todo.scss */
 .squaredTwo {
   width: 28px;
   height: 28px;
@@ -21397,7 +21420,7 @@ footer .black.ui.label.count {
   position: relative;
 }
 
-/* line 76, ../scss/page/_todo.scss */
+/* line 102, ../scss/page/_todo.scss */
 .squaredTwo label {
   cursor: pointer;
   position: absolute;
@@ -21416,7 +21439,7 @@ footer .black.ui.label.count {
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#222', endColorstr='#45484d',GradientType=0 );
 }
 
-/* line 96, ../scss/page/_todo.scss */
+/* line 122, ../scss/page/_todo.scss */
 .squaredTwo label:after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
   filter: alpha(opacity=0);
@@ -21438,14 +21461,14 @@ footer .black.ui.label.count {
   transform: rotate(-45deg);
 }
 
-/* line 118, ../scss/page/_todo.scss */
+/* line 144, ../scss/page/_todo.scss */
 .squaredTwo label:hover::after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=30)";
   filter: alpha(opacity=30);
   opacity: 0.3;
 }
 
-/* line 124, ../scss/page/_todo.scss */
+/* line 150, ../scss/page/_todo.scss */
 .squaredTwo input[type=checkbox]:checked + label:after {
   -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=100)";
   filter: alpha(opacity=100);
@@ -21454,7 +21477,7 @@ footer .black.ui.label.count {
 
 /* Smartphones (portrait) ----------- */
 @media only screen and (max-width: 640px) {
-  /* line 134, ../scss/page/_todo.scss */
+  /* line 160, ../scss/page/_todo.scss */
   .footer-btn {
     font-size: .5em !important;
     padding-top: 2em !important;

@@ -7,10 +7,13 @@ var template = require('hbs!../templates/header');
 var HeaderView = rich.ItemView.extend({
     template : template,
     ui: {
-        input: '#new-task'
+        input: '#new-task',
+        selectAll: '.select-all label',
+        selectAllCheckbox: '.select-all-checkbox'
     },
     events: {
-        'keypress #new-task': 'onInputConfirm'
+        'keypress #new-task': 'onInputConfirm',
+        'click @ui.selectAll': 'wantsToggleSelect'
     },
     initialize : function(options){
         this.masterCollection = options.masterCollection;
@@ -37,7 +40,12 @@ var HeaderView = rich.ItemView.extend({
             title: name
         });
         this.collection.add(model);
-    }
+    },
+
+    wantsToggleSelect: function(){
+        var isChecked = !this.ui.selectAllCheckbox.is(':checked');
+        this.collection.setSelected(isChecked);
+    },
 });
 
 exports.HeaderView = HeaderView;

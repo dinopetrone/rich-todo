@@ -16,16 +16,22 @@ var ListCellView = rich.ItemView.extend({
     events: {
         'click @ui.remove': 'wantsRemove',
         'click @ui.edit': 'wantsEdit',
+        'dblclick @ui.title': 'wantsEdit',
         'keypress @ui.input': 'wantsSubmit',
         'click @ui.checkbox': 'wantsSwitchState'
     },
 
     initialize: function(options) {
         this.masterCollection = options.masterCollection;
+        this.listenTo(this.model, 'change:isActive', this.onActiveChange);
     },
 
     onRender: function(){
         this.ui.input.hide();
+    },
+
+    onActiveChange: function(){
+        this.ui.checkbox.prop("checked", !this.ui.checkbox.prop("checked"));
     },
 
     wantsEdit: function() {
