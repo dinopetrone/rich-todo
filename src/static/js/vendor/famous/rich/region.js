@@ -67,15 +67,14 @@ Region = Region.extend({
 
     open: function(view){
 
-        // view.invalidateLayout();
         this.prepareSubviewAdd(view);
 
-        this.invalidateLayout();
         // this that have nestedSubviews
         // will break if we don't ensure a context is present
         // also, if no context is present, we have yet to be
         // rendered anyway.
         if(this.context){
+            this.invalidateLayout();
             this.invalidateView();
         }
     },

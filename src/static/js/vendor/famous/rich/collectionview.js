@@ -1,4 +1,5 @@
 define(function (require, exports, module) {
+    var backbone = require('backbone');
     var marionette  = require('marionette');
     var RenderNode = require('famous/core/RenderNode');
     var ContainerSurface = require('famous/surfaces/ContainerSurface');
@@ -97,7 +98,6 @@ define(function (require, exports, module) {
             else if(!this.root || this.needsDisplay()){
                 this._renderWorkflow();
             }
-
             return this._spec;
         },
 
@@ -178,7 +178,7 @@ define(function (require, exports, module) {
             this.triggerMethod('add:child', view);
         },
 
-        applyVerticalConstraints: function(view, index){
+        createVerticalConstraints: function(view, index){
             var size = this.sizeForViewAtIndex(view, index);
             var constraints = [];
 
@@ -220,7 +220,7 @@ define(function (require, exports, module) {
             return constraints;
         },
 
-        applyHorizontalConstraints: function(view, index){
+        createHorizontalConstraints: function(view, index){
             var size = this.sizeForViewAtIndex(view, index);
             var constraints = [];
 
@@ -305,12 +305,12 @@ define(function (require, exports, module) {
             var removes = this._lazyRemove;
             var i;
 
-            for(i = 0; i < adds.length; i++){
-                this.prepareSubviewAdd(adds[i]);
-            }
-
             for(i = 0; i < removes.length; i++){
                 this.prepareSubviewRemove(removes[i]);
+            }
+
+            for(i = 0; i < adds.length; i++){
+                this.prepareSubviewAdd(adds[i]);
             }
 
             this._lazyAdd = [];
@@ -321,14 +321,15 @@ define(function (require, exports, module) {
             );
 
             var action = this.orientation == 'vertical' ?
-                this.applyVerticalConstraints.bind(this) :
-                this.applyHorizntalConstraints.bind(this);
+                this.createVerticalConstraints.bind(this) :
+                this.createHorizontalConstraints.bind(this);
 
             this.children.each(function(view, index){
                 constraints = constraints.concat(action(view, index));
             }, this);
 
             this._constraints = constraints;
+
             this.invalidateLayout();
             this.invalidateView();
 

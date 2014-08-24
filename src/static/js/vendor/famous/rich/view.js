@@ -301,6 +301,7 @@ var FamousView = marionette.View.extend({
             child._initializeRelationships();
         });
 
+
         this.addConstraints(wantsInitialize);
 
         this._constraintsInitialized = true;
@@ -449,6 +450,7 @@ var FamousView = marionette.View.extend({
         }
 
         constraint._solver.addConstraint(constraint._constraint);
+
         this._resolveConstraintDependencies(changes);
 
         if(this.root){
@@ -478,6 +480,7 @@ var FamousView = marionette.View.extend({
             target._constraint = null;
             target._solver = null;
             target._stays = null;
+            target._item = null;
 
             // bookkeeping - very costly bookkeeping
             // not happy with this at all, need to look into
@@ -514,6 +517,7 @@ var FamousView = marionette.View.extend({
         target._constraint = null;
         target._solver = null;
         target._stays = null;
+        target._item = null;
 
         // bookkeeping
         delete this._constraintsIndex[constraint.cid];
@@ -1016,16 +1020,23 @@ var FamousView = marionette.View.extend({
         this.triggerMethod('element', this);
     },
 
+
     invalidateLayout: function(){
         // this is rather destructive and it's results are
         // very expensive. We can most certainly can find a
         // better way to handle this.
+        // this._constraintsInitialized = false;
+        // this._relationshipsInitialized = false;
+        // this._initializeAutolayoutDefaults();
         this._constraintsInitialized = false;
-        this._relationshipsInitialized = false;
-        this._initializeAutolayoutDefaults();
 
         if(!this.isDestroyed){
+
             this.children.each(function(subview){
+                subview._constraintsInitialized = false;
+                subview._relationshipsInitialized = false;
+                subview._currentConstraintKey = null;
+                subview._initializeAutolayoutDefaults();
                 subview.invalidateLayout();
             });
         }
@@ -1042,16 +1053,22 @@ var FamousView = marionette.View.extend({
     },
 
     _richDestroy: function(){
-        this._solver = null;
         this._isShown = false;
-        this._autolayout = {};
-        this._constraintsIndex = {};
-        this._constraintRelations = null;
         this.superview = null;
         this.context = null;
         this.root = null;
         this.children = null;
+        this._richAutolayoutDestroy();
         this._richDestroyed = true;
+    },
+
+    _richAutolayoutDestroy: function(){
+        this._solver = null;
+        this._autolayout = {};
+        this._constraints = [];
+        this._constraintsIndex = {};
+        this._constraintRelations = null;
+        this._superviewConstraints = [];
     },
 
     // override Backbone.View.remove()
