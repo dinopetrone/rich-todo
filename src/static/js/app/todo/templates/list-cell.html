@@ -5,24 +5,13 @@
 </div>
 <p class='title' for='{{title}}'>{{title}}</p>
 
-
-<!-- <input type="checkbox" value="None" name="vehicle" class='checkbox' {{#if isActive}} {{else}}checked{{/if}}> -->
-
-<!-- <button class='edit'>Edit</button> -->
-<!-- <button class='destroy'>Remove</button> -->
-<div class="ui icon input pencil editor-input">
+<div class="ui input editor-input">
   <input class="editor" type="text" placeholder={{title}}>
-  <i class="icon"></i>
 </div>
-<div class="ui animated red button destroy-button">
-  <div class="visible content">Remove</div>
-  <div class="hidden content correct-center">
-    <i class="large trash icon"></i>
-  </div>
+
+<div class="red ui icon button destroy-button">
+  <i class="trash icon"></i>
 </div>
-<div class="ui animated green button edit-button">
-  <div class="visible content">Edit</div>
-  <div class="hidden content correct-center">
-    <i class="large edit icon"></i>
-  </div>
+<div class="blue ui icon button edit-button">
+  <i class="pencil icon"></i>
 </div>

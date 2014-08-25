@@ -74,7 +74,7 @@ var ListCellView = rich.ItemView.extend({
             duration:200
         }).then(function(){
             this.model.destroy();
-        }.bind(this))
+        }.bind(this));
     },
 });
 

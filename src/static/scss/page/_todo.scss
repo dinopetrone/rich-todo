@@ -44,24 +44,26 @@ header {
     line-height: 1;
 }
 
-.editor-input {
-    width: 60% !important;
-    position: relative;
-    left: -40px;
+.ui.input.editor-input {
+    width: 50%;
+    position: absolute;
+    left: 40px;
+    top: 5px;
+
 }
 
-.animated {
-    position: absolute !important;
-    right: 12px !important;
-    top: 3px !important;
+.edit-button,
+.destroy-button {
+    float: right;
+    display: inline-block;
+}
 
-    &.green {
-        right: 137px !important;
-    }
+.ui.red.button.destroy-button {
+    margin: 5px 0 0 10px;
+}
 
-    .correct-center {
-        top: 45% !important;
-    }
+.ui.blue.button.edit-button {
+    margin-top: 5px;
 }
 
 
@@ -151,5 +153,21 @@ and (max-width : 640px) {
         font-size: .5em !important;
         padding-top: 2em !important;
         padding-bottom: 2em !important;
+    }
+
+    .ui.button.filter.footer-btn.footer-completed {
+        padding-left: .5rem;
+    }
+}
+
+
+@media only screen
+and (max-width : 320px) {
+    header {
+
+        .ui.input {
+            width: 65%;
+            float: right;
+        }
     }
 }
