@@ -42,7 +42,7 @@ var ListCellView = rich.ItemView.extend({
     },
 
     onActiveChange: function(){
-        this.ui.checkbox.prop("checked", !this.ui.checkbox.prop("checked"));
+        this.ui.checkbox.prop("checked", !this.model.get('isActive'));
     },
 
     wantsEdit: function() {
