@@ -1,5 +1,6 @@
 define(function(require, exports, module) {
     var marionette = require('marionette');
+    var rich = require('rich');
     var Surface = require('famous/core/Surface');
     var FamousView = require('../view').FamousView;
     var GenericSync = require('famous/inputs/GenericSync');
@@ -12,12 +13,13 @@ define(function(require, exports, module) {
     var Transitionable = require("famous/transitions/Transitionable");
     var events = require('../events');
     var SimpleDriver = require('./scroll-drivers/simple').SimpleDriver;
+    var constraints = require('rich/autolayout/constraints');
 
 
     GenericSync.register({
         "touch": TouchSync,
         "scroll": ScrollSync,
-        // "mouse": MouseSync
+        "mouse": MouseSync
     });
 
     var DIRECTION_X = GenericSync.DIRECTION_X;
@@ -30,6 +32,14 @@ define(function(require, exports, module) {
         _idleIncrement: 0,
         _directionalLockEnabled: true,
         _scrollEnabled: true,
+
+        constraints: function() {
+            if(!this._scrollableView) return;
+            return [
+                'H:|[_scrollableView]|',
+                'V:|[_scrollableView]|',
+            ];
+        },
 
         constructor: function(options) {
             options || (options = {});
@@ -46,13 +56,18 @@ define(function(require, exports, module) {
             this.bindParticle();
 
             // scrollable wrapper
-            this._scrollableView = new FamousView({
+            this._scrollableView = new rich.Region({
                 modifier: this._particle
             });
 
             this.contentSize = options.contentSize || this.contentSize || [0, 0];
+            this.scrollType = options.scrollType || this.scrollType || ['touch', 'wheel'];
+
 
             FamousView.prototype.constructor.apply(this, arguments);
+
+            this.addSubview(this._scrollableView);
+
             this._scrollHandler = new EventHandler();
 
             // set up the scroll driver
@@ -66,7 +81,6 @@ define(function(require, exports, module) {
 
             this.perspective = options.perspective || false;
 
-            //Should be .on('context') TODO
             this.on('show', this.wantsSetPerspective);
 
             if (!_.isUndefined(options.directionalLockEnabled)) {
@@ -91,7 +105,11 @@ define(function(require, exports, module) {
 
         wantsSetPerspective: function() {
             if (this.perspective) {
-                this.container.context.setPerspective(this.perspective);
+                if(this.nestedSubviews){
+                    this.container.context.setPerspective(this.perspective);
+                }else{
+                    this.context.setPerspective(this.perspective);
+                }
             }
         },
 
@@ -125,13 +143,10 @@ define(function(require, exports, module) {
             return _.result(this, 'contentSize');
         },
 
-        onContext: function() {
-            // had to put this here to not get a backbone error...not sure why
-            // it can't go in onRender but w/e
-            FamousView.prototype.addSubview.apply(this, [this._scrollableView]);
-        },
-
-        onElement: function() {
+        onShow: function() {
+            if(!this.$el && !this.nestedSubviews){
+                this.$el = $(this.context.container);
+            }
             if (this.hidesOverflow) {
                 this.$el.css({
                     overflow: 'hidden',
@@ -221,12 +236,12 @@ define(function(require, exports, module) {
 
 
 
-        addSubview: function(view) {
-            this._scrollableView.addSubview(view);
+        show: function(view) {
+            this._scrollableView.show(view);
         },
 
-        removeSubview: function(v) {
-            this._scrollableView.removeSubview(view);
+        reset: function() {
+            this._scrollableView.reset();
             this.update();
         },
 
@@ -258,8 +273,27 @@ define(function(require, exports, module) {
         },
 
         _bindScrollEvents: function() {
-            var events = ['touchstart', 'touchmove', 'touchend', 'mousewheel', 'wheel'];
             var self = this;
+            $(window).mouseout(function(e){
+                e = e.originalEvent;
+                var from = e.relatedTarget || e.toElement;
+                if (!from || from.nodeName == "HTML") {
+                    self._scrollHandler.emit('mouseup', e.originalEvent);
+                }
+            });
+            var events = [];
+
+            if(_.contains(this.scrollType, 'touch')){
+                events = events.concat(['touchstart', 'touchmove', 'touchend']);
+            }
+            if(_.contains(this.scrollType, 'wheel')){
+                events = events.concat(['mousewheel', 'wheel']);
+            }
+            if(_.contains(this.scrollType, 'mouse')){
+                events = events.concat(['mousedown', 'mousemove', 'mouseup']);
+            }
+
+
             _.each(events, function(type) {
                 this.$el.on(type, function(e) {
                     self._scrollType = type;
@@ -269,7 +303,10 @@ define(function(require, exports, module) {
 
             this.sync = new GenericSync({
                 "scroll": {},
-                "touch": {}
+                "touch": {},
+                "mouse": {
+                    scale: 5
+                }
             });
 
             if (this._scrollEnabled) {
@@ -330,10 +367,10 @@ define(function(require, exports, module) {
             // normalize the data based on direction
             if(this.direction == DIRECTION_Y){
                 position[0] = 0;
-                if(this._scrollDirection == 'x' && this.getDirectionalLockEnabled())return;
+                if(this._scrollDirection == 'x' && this.getDirectionalLockEnabled())return [0, 0];
             }else if(this.direction == DIRECTION_X){
                 position[1] = 0;
-                if(this._scrollDirection == 'y' && this.getDirectionalLockEnabled())return;
+                if(this._scrollDirection == 'y' && this.getDirectionalLockEnabled())return [0, 0];
             }
             return position;
         },
