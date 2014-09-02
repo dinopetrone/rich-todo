@@ -15,11 +15,13 @@ var constraints = require('app/todo/constraints/todo-layout');
 var TodoLayout = rich.View.extend({
 
     constraints: function() {
+        var c;
         if (window.outerWidth > 1028) {
-            return constraints.large;
+            c = constraints.large;
         } else {
-            return constraints.medium;
+            c = constraints.medium;
         }
+        return c;
     },
 
     initialize: function() {
@@ -50,12 +52,11 @@ var TodoLayout = rich.View.extend({
             masterCollection: this.masterCollection
         };
 
-        // list view creation inside a scrollview
+        // // list view creation inside a scrollview
         var listview = this.listView = new ListCollectionView(options);
         options.listView = listview;
 
         var scrollview = this.scrollview = new scroll.ScrollView({
-
             contentSize: function() {
                 if (listview.children.length === 0) {
                     return [0, 0];
@@ -72,10 +73,11 @@ var TodoLayout = rich.View.extend({
             scrollDriver: BounceDriver
         });
 
+
         this.listenTo(listview, 'change', scrollview.update.bind(scrollview));
 
 
-        scrollview.addSubview(this.listView);
+        scrollview.show(this.listView);
 
         this.headerView = new HeaderView(options);
         this.footerView = new FooterView(options);
