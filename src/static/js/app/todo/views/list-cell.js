@@ -26,13 +26,8 @@ var ListCellView = rich.ItemView.extend({
         'click @ui.checkbox': 'wantsSwitchState'
     },
 
-    modifier: function(){
-        var mod = new Modifier();
-        this.modifier = mod;
-        return mod;
-    },
-
     initialize: function(options) {
+        this.modifier = new Modifier();
         this.masterCollection = options.masterCollection;
         this.listenTo(this.model, 'change:isActive', this.onActiveChange);
     },
