@@ -4,7 +4,7 @@ define(function(require, exports, module) {
     var rich = require('rich');
 
     app.addRichContexts({
-        todo:{
+        window:{
             el: 'body'
         }
     });

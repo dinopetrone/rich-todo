@@ -5,36 +5,22 @@ var backbone = require('backbone');
 var marionette = require('marionette');
 var app = require('app/app');
 var TodoLayout = require('app/todo/views/todo-layout').TodoLayout;
+var constraintsWithVFL = require('rich/autolayout/constraints').constraintsWithVFL;
 
 var AppController = marionette.Controller.extend({
 
     initialize: function(options){
         this.app = app;
+
         this.todo = new TodoLayout();
+        this.todo.name = 'todo';
 
 
-        // @adam we need to discuss this... obv i'm doing something wrong
-        // because this is painful
-        this.app.todo.constraints = function(){
-            return [
-                {
-                    item: this.todo,
-                    attribute: 'width',
-                    toItem: this.app.todo,
-                    toAttribute: 'width',
-                    relatedBy: '=='
-                },
-                {
-                    item: this.todo,
-                    attribute: 'height',
-                    toItem: this.app.todo,
-                    toAttribute: 'height',
-                    relatedBy: '=='
-                }
-            ];
-        }.bind(this);
-        this.app.todo.addSubview(this.todo);
-        this.app.todo.invalidateLayout();
+        this.app.window.addSubview(this.todo);
+
+        var c1 = constraintsWithVFL('|[todo]|', {todo: this.todo});
+        var c2 = constraintsWithVFL('V:|[todo]|', {todo: this.todo});
+        this.app.window.addConstraints([].concat(c1, c2));
     },
 
     index: function(){
