@@ -15,12 +15,7 @@ var AppController = marionette.Controller.extend({
         this.todo = new TodoLayout();
         this.todo.name = 'todo';
 
-
-        this.app.window.addSubview(this.todo);
-
-        var c1 = constraintsWithVFL('|[todo]|', {todo: this.todo});
-        var c2 = constraintsWithVFL('V:|[todo]|', {todo: this.todo});
-        this.app.window.addConstraints([].concat(c1, c2));
+        this.app.window.fillWithSubview(this.todo);
     },
 
     index: function(){
