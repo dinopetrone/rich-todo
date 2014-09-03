@@ -30,7 +30,7 @@ var TodoLayout = rich.View.extend({
 
         _.each(_.range(10), function(i) {
             this.masterCollection.add({
-                title: 'hi' + (i + 1),
+                title: 'task ' + (i + 1),
                 isActive: Math.random() > 0.5
             });
         }, this);
