@@ -6,6 +6,7 @@ define(function(require, exports, module) {
     var GenericSync = require('famous/inputs/GenericSync');
     var Engine = require('famous/core/Engine');
     var Particle = require('famous/physics/bodies/Particle');
+    var PhysicsEngine = require('famous/physics/PhysicsEngine');
     var TouchSync = require('famous/inputs/TouchSync');
     var ScrollSync = require('famous/inputs/ScrollSync');
     var MouseSync = require('famous/inputs/MouseSync');
@@ -14,7 +15,7 @@ define(function(require, exports, module) {
     var events = require('../events');
     var SimpleDriver = require('./scroll-drivers/simple').SimpleDriver;
     var constraints = require('rich/autolayout/constraints');
-
+    var utils = require('./utils');
 
     GenericSync.register({
         "touch": TouchSync,
@@ -45,12 +46,13 @@ define(function(require, exports, module) {
             options || (options = {});
             _.bindAll(this, '_onScrollUpdate', '_onScrollStart', '_onScrollEnd', 'triggerScrollUpdate');
 
-            this._positionX = new Transitionable(0);
-            this._positionY = new Transitionable(0);
+            this.positionX = new Transitionable(0);
+            this.positionY = new Transitionable(0);
 
             // physics
             this._particle = new Particle();
-
+            this._physicsEngine = new PhysicsEngine();
+            this._physicsEngine.addBody(this._particle);
 
             // transitionables setup
             this.bindParticle();
@@ -72,7 +74,12 @@ define(function(require, exports, module) {
 
             // set up the scroll driver
             var ScrollDriver = options.scrollDriver || SimpleDriver;
-            this._driver = new ScrollDriver(this);
+            this._driver = new ScrollDriver({
+                scrollView: this,
+                physicsEngine: this._physicsEngine,
+                particle: this._particle,
+                direction: this.direction
+            });
 
             // options
             this.direction = options.direction;
@@ -95,7 +102,7 @@ define(function(require, exports, module) {
 
         bindParticle: function(){
             this._particle.positionFrom(function() {
-                return [this._positionX.get(), this._positionY.get()];
+                return [this.positionX.get(), this.positionY.get()];
             }.bind(this));
         },
 
@@ -162,7 +169,7 @@ define(function(require, exports, module) {
         },
 
         getScrollPosition: function() {
-            return [this._positionX.get(), this._positionY.get()];
+            return [this.positionX.get(), this.positionY.get()];
         },
 
         _cleanScrollPosition: function(x, y) {
@@ -180,6 +187,7 @@ define(function(require, exports, module) {
         },
 
         setScrollPosition: function(x, y, transition, limit) {
+            this._scrollableView.setNeedsDisplay(true);
             limit = _.isUndefined(limit) ? true : limit;
             if (limit) {
                 var pos = this._cleanScrollPosition(x, y);
@@ -191,20 +199,24 @@ define(function(require, exports, module) {
             if (transition) {
                 var obj = this._prepareScrollModification(transition.duration);
                 this._scrollAnimationCallback = obj.callback;
-                this._positionY.set(y, transition, obj.callback);
-                this._positionX.set(x, transition, obj.callback);
+                this.positionY.set(y, transition, obj.callback);
+                this.positionX.set(x, transition, obj.callback);
                 return obj.deferred;
             } else {
-                this._positionX.halt();
-                this._positionY.halt();
-                this._positionX.set(x, {
+                this.positionX.halt();
+                this.positionY.halt();
+                this.positionX.set(x, {
                     duration: 0
                 });
-                this._positionY.set(y, {
+                this.positionY.set(y, {
                     duration: 0
                 });
-                this._scrollableView.invalidateView();
+                this.invalidate();
             }
+        },
+
+        invalidate: function(){
+            this._scrollableView.invalidateView();
         },
 
         _prepareScrollModification: function(duration) {
@@ -223,7 +235,7 @@ define(function(require, exports, module) {
             }.bind(this);
 
             if (!duration) {
-                this._scrollableView.invalidateView();
+                this.invalidate()
             } else {
                 Engine.on('postrender', tick);
             }
@@ -320,7 +332,7 @@ define(function(require, exports, module) {
         },
 
         _onScrollStart: function(data) {
-            this._scrollableView.setNeedsDisplay(true);
+            // this._scrollableView.setNeedsDisplay(true);
             this._scrollDirection = null;
             this._idleIncrement = 0;
             this.trigger('scroll:start', this.getScrollPosition());
@@ -329,7 +341,7 @@ define(function(require, exports, module) {
 
         _onScrollEnd: function(data) {
             this.trigger('scroll:end', this.getScrollPosition());
-            this._driver.wantsThrow(data.velocity);
+            this._driver.wantsThrow(data.velocity, this._scrollType);
         },
 
         _setScrollDirection: function(delta) {
@@ -345,12 +357,11 @@ define(function(require, exports, module) {
         },
 
         triggerScrollUpdate: function(){
-            this._scrollableView.setNeedsDisplay(true);
+            // this._scrollableView.setNeedsDisplay(true);
             this.trigger('scroll:update', this.getScrollPosition());
         },
 
         _shouldScroll: function(contentSize, containerSize) {
-
             if (this.direction == DIRECTION_X) {
                 if (contentSize[0] > containerSize[0]) return true;
             } else if (this.direction == DIRECTION_Y) {
@@ -363,18 +374,6 @@ define(function(require, exports, module) {
         },
 
 
-        _normalizeVector: function(position){
-            // normalize the data based on direction
-            if(this.direction == DIRECTION_Y){
-                position[0] = 0;
-                if(this._scrollDirection == 'x' && this.getDirectionalLockEnabled())return [0, 0];
-            }else if(this.direction == DIRECTION_X){
-                position[1] = 0;
-                if(this._scrollDirection == 'y' && this.getDirectionalLockEnabled())return [0, 0];
-            }
-            return position;
-        },
-
         clearScrollAnimations: function(){
             if(this._scrollAnimationCallback){
                 this._scrollAnimationCallback();
@@ -382,8 +381,8 @@ define(function(require, exports, module) {
         },
 
         getBoundsInfo: function(delta){
-            var gotoPosX = this._positionX.get() + delta[0];
-            var gotoPosY = this._positionY.get() + delta[1];
+            var gotoPosX = this.positionX.get() + delta[0];
+            var gotoPosY = this.positionY.get() + delta[1];
             var contentSize = this.getContentSize();
             var containerSize = this.getSize();
             var scrollableDistanceX = contentSize[0] - containerSize[0];
@@ -435,7 +434,7 @@ define(function(require, exports, module) {
 
             // depending on the direction you are scrolling, this will normalize the data
             // setting the other direction to 0, stopping any scroll in that direction
-            delta = this._normalizeVector(delta);
+            delta = utils.normalizeVector(delta, this.direction);
 
             // dampen the delta so it feels right between mobile and desktop
             delta = this._driver.dampenDelta(data.delta, this._scrollType);
