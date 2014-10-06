@@ -13,7 +13,6 @@ var AppController = marionette.Controller.extend({
         this.app = app;
 
         this.todo = new TodoLayout();
-        this.todo.name = 'todo';
 
         this.app.window.fillWithSubview(this.todo);
     },

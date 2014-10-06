@@ -4,9 +4,7 @@ define(function(require, exports, module) {
     var rich = require('rich');
 
     app.addRichContexts({
-        window:{
-            el: 'body'
-        }
+        window: 'body'
     });
 
     app.addInitializer(function() {

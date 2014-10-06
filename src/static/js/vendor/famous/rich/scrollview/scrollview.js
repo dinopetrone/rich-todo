@@ -1,8 +1,9 @@
 define(function(require, exports, module) {
     var marionette = require('marionette');
     var rich = require('rich');
+    var richUtils = require('rich/utils');
     var Surface = require('famous/core/Surface');
-    var FamousView = require('../view').FamousView;
+    var View = require('../view').FamousView;
     var GenericSync = require('famous/inputs/GenericSync');
     var Engine = require('famous/core/Engine');
     var Particle = require('famous/physics/bodies/Particle');
@@ -26,13 +27,17 @@ define(function(require, exports, module) {
     var DIRECTION_X = GenericSync.DIRECTION_X;
     var DIRECTION_Y = GenericSync.DIRECTION_Y;
 
-    var ScrollView = FamousView.extend({
+    var ScrollView = View.extend({
+        _isUserScrolling: false,
         renderable: null,
         nestedSubviews: true,
         _hasStalledCount: 0,
         _idleIncrement: 0,
         _directionalLockEnabled: true,
         _scrollEnabled: true,
+        _previousScrollUpdate: null,
+        _isInAnimatedScroll: false,
+        _currentVelocity:[0, 0],
 
         constraints: function() {
             if(!this._scrollableView) return;
@@ -66,11 +71,20 @@ define(function(require, exports, module) {
             this.scrollType = options.scrollType || this.scrollType || ['touch', 'wheel'];
 
 
-            FamousView.prototype.constructor.apply(this, arguments);
+            View.prototype.constructor.apply(this, arguments);
 
             this.addSubview(this._scrollableView);
 
             this._scrollHandler = new EventHandler();
+
+
+
+            // options
+            this.direction = options.direction;
+
+            this.hidesOverflow = _.isUndefined(options.hidesOverflow) ? true : options.hidesOverflow;
+
+            this.perspective = options.perspective || false;
 
             // set up the scroll driver
             var ScrollDriver = options.scrollDriver || SimpleDriver;
@@ -80,13 +94,6 @@ define(function(require, exports, module) {
                 particle: this._particle,
                 direction: this.direction
             });
-
-            // options
-            this.direction = options.direction;
-
-            this.hidesOverflow = _.isUndefined(options.hidesOverflow) ? true : options.hidesOverflow;
-
-            this.perspective = options.perspective || false;
 
             this.on('show', this.wantsSetPerspective);
 
@@ -170,6 +177,12 @@ define(function(require, exports, module) {
 
         getScrollPosition: function() {
             return [this.positionX.get(), this.positionY.get()];
+            var pos = this._scrollableView._spec.target.transform.splice(12, 2);
+            return pos;
+        },
+
+        getScrollVelocity: function(){
+            return this._currentVelocity || [0, 0];
         },
 
         _cleanScrollPosition: function(x, y) {
@@ -187,6 +200,14 @@ define(function(require, exports, module) {
         },
 
         setScrollPosition: function(x, y, transition, limit) {
+            this.clearScrollAnimations();
+            this.halt();
+            // should we do something?
+            var currPos = this.getScrollPosition();
+            if(currPos[0] == x && currPos[1] == y){
+                return;
+            }
+
             this._scrollableView.setNeedsDisplay(true);
             limit = _.isUndefined(limit) ? true : limit;
             if (limit) {
@@ -194,7 +215,6 @@ define(function(require, exports, module) {
                 x = pos[0];
                 y = pos[1];
             }
-            // don't let the scroll position be anything crazy
 
             if (transition) {
                 var obj = this._prepareScrollModification(transition.duration);
@@ -203,8 +223,6 @@ define(function(require, exports, module) {
                 this.positionX.set(x, transition, obj.callback);
                 return obj.deferred;
             } else {
-                this.positionX.halt();
-                this.positionY.halt();
                 this.positionX.set(x, {
                     duration: 0
                 });
@@ -219,21 +237,40 @@ define(function(require, exports, module) {
             this._scrollableView.invalidateView();
         },
 
+        invalidateLayout: function(){
+
+            richUtils.defer(function(){
+                this.update();
+            }.bind(this));
+
+            View.prototype.invalidateLayout.apply(this, arguments);
+        },
+
+        _getVelocityForPositions: function(pos1, pos2, time){
+            var xDiff = pos2[0] - pos1[0];
+            var yDiff = pos2[1] - pos1[1];
+            return [xDiff/time, yDiff/time];
+        },
+
         _prepareScrollModification: function(duration) {
             var deferred = $.Deferred();
 
             var self = this;
 
             var tick = function() {
+
+                self._isInAnimatedScroll = true;
                 self.triggerScrollUpdate();
                 self._scrollableView.invalidateView();
+
             };
 
             var callback = function() {
                 Engine.removeListener('postrender', tick);
+                this._isInAnimatedScroll = false;
+                this._currentVelocity = null;
                 deferred.resolve(this);
             }.bind(this);
-
             if (!duration) {
                 this.invalidate()
             } else {
@@ -258,7 +295,19 @@ define(function(require, exports, module) {
         },
 
         update: function() {
-            this._onScrollUpdate({delta:[0,0]});
+            this._onScrollUpdate({
+                delta:[0,0],
+                velocity:[0,0]
+            });
+        },
+
+        halt: function(){
+            this._driver.halt();
+            this.positionX.halt();
+            this.positionY.halt();
+            this.clearScrollAnimations();
+            this._particle.setVelocity([0, 0]);
+            this.bindParticle();
         },
 
         _onFamousRender: function() {
@@ -279,7 +328,7 @@ define(function(require, exports, module) {
             }
 
             // if the velocity has sat at 0 for 300 frames, kill the render
-            if(this._idleIncrement > 300){
+            if(this._idleIncrement > 800){
                 this._scrollableView.setNeedsDisplay(false);
             }
         },
@@ -332,7 +381,7 @@ define(function(require, exports, module) {
         },
 
         _onScrollStart: function(data) {
-            // this._scrollableView.setNeedsDisplay(true);
+            this._isUserScrolling = true;
             this._scrollDirection = null;
             this._idleIncrement = 0;
             this.trigger('scroll:start', this.getScrollPosition());
@@ -340,8 +389,13 @@ define(function(require, exports, module) {
 
 
         _onScrollEnd: function(data) {
-            this.trigger('scroll:end', this.getScrollPosition());
+            this._isUserScrolling = false;
             this._driver.wantsThrow(data.velocity, this._scrollType);
+            this.trigger('scroll:end', this.getScrollPosition());
+        },
+
+        isUserScrolling: function(){
+            return this._isUserScrolling;
         },
 
         _setScrollDirection: function(delta) {
@@ -357,9 +411,23 @@ define(function(require, exports, module) {
         },
 
         triggerScrollUpdate: function(){
-            // this._scrollableView.setNeedsDisplay(true);
+            this._updateScrollVelocity();
             this.trigger('scroll:update', this.getScrollPosition());
         },
+
+        _updateScrollVelocity: function(){
+
+            currTickTime = new Date().getTime();
+            currTickPos = this.getScrollPosition();
+            if(this._prevTickPos && this._prevTickTime){
+                var tickDiff =  currTickTime - this._prevTickTime;
+                this._currentVelocity = this._getVelocityForPositions(this._prevTickPos, currTickPos, tickDiff);
+            }
+            this._prevTickPos = currTickPos;
+            this._prevTickTime = currTickTime;
+        },
+
+
 
         _shouldScroll: function(contentSize, containerSize) {
             if (this.direction == DIRECTION_X) {
@@ -423,11 +491,11 @@ define(function(require, exports, module) {
         },
 
         _onScrollUpdate: function(data) {
-
             // if you were animating a scroll, this will kill it
             this.clearScrollAnimations();
 
             var delta = data.delta;
+            this._previousScrollUpdate = data;
 
             // cache the direction for all future movement until you start again
             this._setScrollDirection(delta);
