@@ -20,7 +20,7 @@ var HeaderView = rich.ItemView.extend({
     },
 
     onRender: function(){
-        this.ui.input.focus();
+        //this.ui.input.focus();
     },
 
     onInputConfirm: function(event) {

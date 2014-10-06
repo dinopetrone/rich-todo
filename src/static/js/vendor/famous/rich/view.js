@@ -34,6 +34,7 @@ var FamousView = marionette.View.extend({
     _isRoot: false,
     _spec: null,
     _needsDisplay: false,
+    _firstRender: null,
 
     // we need to own initialize, this includes marionette.View()
     // AND backbone.View()
@@ -140,11 +141,17 @@ var FamousView = marionette.View.extend({
             // this isn't a literal return because we are in an _.each, it'll just kick out this loop
             if(this._autolayoutTransitionables[prop].get() == this._autolayout[prop].value) return;
             var animation = this.getAutolayoutTransitionForProperty(prop);
+
             if(this._hasSetInitialProp && animation && animation.duration){
                 var mod = this._prepareModification(animation.duration, false);
+
+                mod.deferred.then(function(){
+                    this.trigger('autolayoutTransition:complete', this, prop);
+                }.bind(this));
+
                 this._autolayoutTransitionables[prop].halt();
                 this._autolayoutTransitionables[prop].set(this._autolayout[prop].value, animation, mod.callback);
-            }else{
+            } else {
                 this._autolayoutTransitionables[prop].set(this._autolayout[prop].value);
             }
         }, this);
@@ -266,11 +273,16 @@ var FamousView = marionette.View.extend({
         return tmp;
     },
 
+    _resetConstraints: function(){
+        this._constraints = [];
+        this._constraintsIndex = {};
+    },
+
     _initializeConstraints: function(){
         var constraints = _.result(this, 'constraints');
         var wantsInitialize;
         var shouldClearConstraints = false;
-        var key;
+        var key = null;
 
         this._constraintsInitialized = true;
         this._initializeRelationships();
@@ -286,18 +298,41 @@ var FamousView = marionette.View.extend({
         if(constraints){
             constraints = this._processIntrinsicConstraints(constraints);
             key = hashConstraints(constraints, this);
-            shouldClearConstraints = key != this._currentConstraintKey;
+            shouldClearConstraints =  this._currentConstraintKey !== undefined &&
+                                      (key != this._currentConstraintKey) ? true: false;
         }
 
         if(shouldClearConstraints) {
-            this._currentConstraintKey = key;
-            wantsInitialize = constraints;
+            this._resetConstraints();
+
+            // Provide the user an opportunity to add back in
+            // any constriants that may need.
+
+            // Temporary set _relationshipsInitialized to false so
+            // that any call to addConstraint(s), will just push into
+            // the _constaints array. See addConstraint and addConstraints
+            // for where this flag is used.
+            this._relationshipsInitialized = false;
+            this.triggerMethod('constraints:reset');
+            this._relationshipsInitialized = true;
+            wantsInitialize = [].concat(constraints, this._constraints);
+
         } else {
+            // 1st pass though, we merge the constraints and this._constraints
+            // after that, this._constraints will host the intrinsic
+            // constraints, unless those intrinsic constraints change, in
+            // which case we won't be in this `else` anyway, we will be
+            // above.
+
+            if(this._currentConstraintKey === undefined && constraints){
+                this._constraints = this._constraints.concat(constraints);
+            }
+
             wantsInitialize = this._constraints;
+            this._resetConstraints();
         }
 
-        this._constraints = [];
-        this._constraintsIndex = {};
+        this._currentConstraintKey = key;
 
         this.children.each(function(child){
             child._initializeRelationships();
@@ -353,55 +388,59 @@ var FamousView = marionette.View.extend({
         var variables;
         var values;
 
-        if(!_.isEmpty(changes)){
+        if(_.isEmpty(changes)) return;
 
-            _.each(changes, function(value, key){
-                view = this.children.findByCid(key);
-                target = view._constraintRelations;
+        _.each(changes, function(value, key){
+            view = this.children.findByCid(key);
+            target = view._constraintRelations;
 
-                variables = [];
-                values = [];
+            variables = [];
+            values = [];
 
-                // create the companion attrs:
-                if(_.has(value, 'right') || _.has(value, 'left')){
+            // create the companion attrs:
+            if(_.has(value, 'right') || _.has(value, 'left')){
 
-                    variables = variables.concat([
-                        view._autolayout.left,
-                        view._autolayout.right]);
+                variables = variables.concat([
+                    view._autolayout.width,
+                    view._autolayout.left,
+                    view._autolayout.right]);
 
-                    values = values.concat([
-                        view._autolayout.left.value,
-                        view._autolayout.right.value]);
-                }
+                values = values.concat([
+                    view._autolayout.width.value,
+                    view._autolayout.left.value,
+                    view._autolayout.right.value]);
+            }
 
-                if(_.has(value, 'top') || _.has(value, 'bottom')){
-                    variables = variables.concat([
-                        view._autolayout.top,
-                        view._autolayout.bottom]);
+            if(_.has(value, 'top') || _.has(value, 'bottom')){
+                variables = variables.concat([
+                    view._autolayout.height,
+                    view._autolayout.top,
+                    view._autolayout.bottom]);
 
-                    values = values.concat([
-                        view._autolayout.top.value,
-                        view._autolayout.bottom.value]);
-                }
+                values = values.concat([
+                    view._autolayout.height.value,
+                    view._autolayout.top.value,
+                    view._autolayout.bottom.value]);
+            }
 
-                _.each(target.keys(), function(key){
-                    // because the key could be a sibling or a child,
-                    // we need to look in both places for it
-                    var each = this.children.findByCid(key) ||
-                               view.children.findByCid(key);
+            _.each(target.keys(), function(key){
+                // because the key could be a sibling or a child,
+                // we need to look in both places for it
+                var each = this.children.findByCid(key) ||
+                           view.children.findByCid(key);
 
-                    each.updateVariables(variables, values);
-                }, this);
-
+                each.updateVariables(variables, values);
             }, this);
-        }
+
+        }, this);
     },
 
     addConstraints: function(constraints){
         var i;
         var each;
         var result;
-        var changes = {};
+        var changes;
+        var hasNoRoot = this.root ? false : true;
 
         var addStay = function(solver){
             return function(stay){
@@ -409,8 +448,48 @@ var FamousView = marionette.View.extend({
             };
         };
 
+        var views = {};
         for(i = 0; i < constraints.length; i++){
+            changes = {};
             each = constraints[i];
+
+            // WARNING: It's going to look very strange ahead, there
+            // is ALMOST CERTAINLY a better way to handle this, but
+            // time prevents it at the moment. Anyway, be sure to read
+            // the comments below to help understand the WHY of what's
+            // happening.
+
+            // If there is a root AND the relationships have been
+            // initialized that means we will be calling invalidateLayout()
+            // below. That will trigger a call to _initializeConstriants()
+            // which calls addConstraints(). Yes, it will come right back
+            // here. `this.root` will be null on that pass though.
+            //
+            // Since we know we will be coming right back here, lets put up
+            // a guard to prevent us from doing the song and dance below
+            // this 2x. On the second time around for the render, `this.root`
+            // will be null and `this._relationshipsInitialized` will
+            // be true. In other words this block won't get used 2x.
+            if(this.root && this._relationshipsInitialized){
+                this._constraintsIndex[each.cid] = this._constraints.length;
+                this._constraints.push(each);
+                continue;
+            }
+
+            // Similar to above, if we have no root, we know that a render
+            // pass is forthcoming. There is no need to run the song and
+            // dance below this 2x. So this the guard to prevent that.
+            // On a render pass here, `this.root` will be null but
+            // `this._relationshipsInitialized` will be true. In other words
+            // this block won't get used 2x.
+            //
+            // _initializeConstraints calls _initializeRelationships ,
+            // which then calls addConstaints, which is where we are at now.
+            if(hasNoRoot && this._relationshipsInitialized !== true){
+                this._constraintsIndex[each.cid] = this._constraints.length;
+                this._constraints.push(each);
+                continue;
+            }
 
             each.prepare(this);
             this._processAffectedRelationships(each.attributes, changes);
@@ -423,43 +502,49 @@ var FamousView = marionette.View.extend({
             }
 
             each._solver.addConstraint(each._constraint);
+            this._resolveConstraintDependencies(changes);
+
+            if(!each._item._firstRender)
+                views[each._item.cid] = each._item;
         }
 
-        this._resolveConstraintDependencies(changes);
+        for(var key in views){
+            var obj = views[key];
+
+            var action = function(prop){
+                obj._autolayoutTransitionables[prop].set(obj._autolayout[prop].value);
+            };
+
+            _.each(CONSTRAINT_PROPS, action);
+            obj._firstRender = true;
+        }
 
         if(this.root){
-            this.invalidateLayout();
-            this.invalidateView();
+            this.invalidateAll();
         }
     },
 
     addConstraint: function(constraint){
-        var changes = {};
+        var hasNoRoot = this.root ? false : true;
 
-        var addStay = function(solver){
-            return function(stay){
-                solver.addStay(stay, autolayout.weak, 10);
-            };
-        };
-
-        constraint.prepare(this);
-
-        this._processAffectedRelationships(constraint.attributes, changes);
-
-        this._constraintsIndex[constraint.cid] = this._constraints.length;
-        this._constraints.push(constraint);
-
-        if(constraint._stays){
-            _.each(constraint._stays, addStay(constraint._solver));
+        // See the notes in `addConstraints` above for why
+        // these 2 if blocks exist they way they do.
+        // No return here because we need it to call invalidateLayout()
+        // below, which will call _initializeConstraints()
+        // which will call addConstraint(s) above.
+        if(this.root && this._relationshipsInitialized){
+            this._constraintsIndex[constraint.cid] = this._constraints.length;
+            this._constraints.push(constraint);
         }
 
-        constraint._solver.addConstraint(constraint._constraint);
-
-        this._resolveConstraintDependencies(changes);
+        if(hasNoRoot && this._relationshipsInitialized !== true){
+            this._constraintsIndex[constraint.cid] = this._constraints.length;
+            this._constraints.push(constraint);
+            return;
+        }
 
         if(this.root){
-            this.invalidateLayout();
-            this.invalidateView();
+            this.invalidateAll();
         }
     },
 
@@ -497,8 +582,7 @@ var FamousView = marionette.View.extend({
         }
 
         if(this.root){
-            this.invalidateLayout();
-            this.invalidateView();
+            this.invalidateAll();
         }
     },
 
@@ -531,8 +615,7 @@ var FamousView = marionette.View.extend({
         }
 
         if(this.root){
-            this.invalidateLayout();
-            this.invalidateView();
+            this.invalidateAll();
         }
     },
 
@@ -567,7 +650,7 @@ var FamousView = marionette.View.extend({
         return {deferred: deferred.promise(), callback: callback};
     },
 
-    setTransform: function(transform, transition, index){
+    _animateModifier: function(type, args, transition, index){
         index || (index = 0);
 
         var target;
@@ -582,85 +665,29 @@ var FamousView = marionette.View.extend({
         }
 
         if(!duration){
-            target.setTransform(transform);
+            target[type](args);
             this.invalidateView();
         }else{
-            target.setTransform(transform, transition, obj.callback);
+            target[type](args, transition, obj.callback);
         }
 
         return obj.deferred;
+    },
+
+    setTransform: function(transform, transition, index){
+        return this._animateModifier('setTransform', transform, transition, index);
     },
 
     setOpacity: function(opacity, transition, index){
-        index || (index = 0);
-
-        var target;
-        var duration = transition && transition.duration ? transition.duration : 0;
-
-        var obj = this._prepareModification(duration);
-
-        if(_.isArray(this._modifier)){
-            target = this._modifier[index];
-        } else {
-            target = this._modifier;
-        }
-
-        if(!duration){
-            target.setOpacity(opacity);
-            this.invalidateView();
-        }else{
-            target.setOpacity(opacity, transition, obj.callback);
-        }
-
-        return obj.deferred;
+        return this._animateModifier('setOpacity', opacity, transition, index);
     },
 
     setOrigin: function(origin, transition, index){
-        index || (index = 0);
-
-        var target;
-        var duration = transition && transition.duration ? transition.duration : 0;
-
-        var obj = this._prepareModification(duration);
-
-        if(_.isArray(this._modifier)){
-            target = this._modifier[index];
-        } else {
-            target = this._modifier;
-        }
-
-        if(!duration){
-            target.setOrigin(origin);
-            this.invalidateView();
-        }else{
-            target.setOrigin(origin, transition, obj.callback);
-        }
-
-        return obj.deferred;
+        return this._animateModifier('setOrigin', origin, transition, index);
     },
 
     setAlign: function(align, transition, index){
-        index || (index = 0);
-
-        var target;
-        var duration = transition && transition.duration ? transition.duration : 0;
-
-        var obj = this._prepareModification(duration);
-
-        if(_.isArray(this._modifier)){
-            target = this._modifier[index];
-        } else {
-            target = this._modifier;
-        }
-
-        if(!duration){
-            target.setAlign(align);
-            this.invalidateView();
-        }else{
-            target.setAlign(align, transition, obj.callback);
-        }
-
-        return obj.deferred;
+        return this._animateModifier('setAlign', align, transition, index);
     },
 
     getFamousId: function(){
@@ -845,13 +872,56 @@ var FamousView = marionette.View.extend({
         this.addConstraints([].concat(c1, c2));
     },
 
+    _removeConstraintsForView: function(view){
+        var toRemove = [];
+        var externalRemove = [];
+        var leafRelationships = 0;
+        var constraints = this.getConstraints();
+
+        for(var i = 0; i < constraints.length; i++){
+            var each = constraints[i];
+            var json = each.attributes;
+
+            if(json.item == view){
+                toRemove.push(each);
+
+                if(json.toItem && json.toItem.superview == view.superview){
+                    leafRelationships++;
+                }
+
+            } else if (json.toItem == view){
+                toRemove.push(each);
+
+                if(json.item.superview == view.superview){
+                    leafRelationships++;
+                }
+            }
+        }
+
+        // prevent invalidateView/invalidateLayout invocation
+        // that comes with this.removeConstraints()
+        var root = this.root;
+        this.root = null;
+
+        this.removeConstraints(toRemove);
+
+        // restore the root
+        this.root = root;
+
+        if(this.root && leafRelationships > 0){
+            this.invalidateLayout();
+        }
+    },
+
     prepareSubviewRemove: function(view){
         this.children.remove(view);
         this.stopListening(view, events.INVALIDATE, this.subviewDidChange);
 
+        this._removeConstraintsForView(view);
+
         utils.defer(function(){
             view.invalidateLayout();
-            view._richDestroy();
+            view.remove();
         });
     },
 
@@ -990,6 +1060,21 @@ var FamousView = marionette.View.extend({
         }
     },
 
+    getBounds: function(){
+        return {
+            width: this._autolayout.width.value,
+            height: this._autolayout.height.value,
+            top: this._autolayout.top.value,
+            right: this._autolayout.right.value,
+            bottom: this._autolayout.bottom.value,
+            left: this._autolayout.left.value,
+        };
+    },
+
+    getConstraints: function(){
+        return this._constraints;
+    },
+
     getSize: function(){
         return [this._autolayout.width.value, this._autolayout.height.value];
     },
@@ -1034,6 +1119,19 @@ var FamousView = marionette.View.extend({
         this.triggerMethod('element', this);
     },
 
+    invalidateAll: function(){
+
+        var invalidate = function(){
+            this.invalidateLayout();
+            this.invalidateView();
+        }.bind(this);
+
+        var action = utils.defer(invalidate);
+
+        this.invalidateAll = function(){
+            action = action(invalidate);
+        };
+    },
 
     invalidateLayout: function(){
         // this is rather destructive and it's results are
@@ -1065,22 +1163,28 @@ var FamousView = marionette.View.extend({
     },
 
     _richDestroy: function(){
+        if(this._richDestroyed) return;
         this._isShown = false;
         this.superview = null;
         this.context = null;
         this.root = null;
-        this.children = null;
+        this.children = new backbone.ChildViewContainer();
         this._richAutolayoutDestroy();
         this._richDestroyed = true;
+        this._firstRender = null
     },
 
     _richAutolayoutDestroy: function(){
         this._solver = null;
-        this._autolayout = {};
-        this._constraints = [];
-        this._constraintsIndex = {};
+
+        if(this.isDestroyed){
+            this._autolayout = null;
+        } else {
+            this._initializeAutolayout();
+        }
+
+        this._resetConstraints();
         this._constraintRelations = null;
-        this._superviewConstraints = [];
     },
 
     // override Backbone.View.remove()
@@ -1091,6 +1195,7 @@ var FamousView = marionette.View.extend({
         // Backbone.View.remove()
 
         // this.$el.remove();
+        this.unbindUIElements();
 
         if(this.$el){
             this.undelegateEvents();
@@ -1100,6 +1205,18 @@ var FamousView = marionette.View.extend({
 
         if(!this._richDestroyed)
             this._richDestroy();
+
+        this.$el = null;
+        this.el = null;
+
+        if(this.isDestroyed){
+            this.renderable = null;
+            this._html = null;
+        }
+
+        _.each(CONSTRAINT_PROPS, function(prop){
+            this._autolayoutTransitionables[prop].halt();
+        }, this);
 
         return this;
     },
